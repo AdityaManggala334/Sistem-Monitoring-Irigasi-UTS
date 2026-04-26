@@ -1,5 +1,7 @@
 <?php
 
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 session_start();
 require_once 'koneksi.php';
 
@@ -30,8 +32,15 @@ $result = mysqli_stmt_get_result($stmt);
 $user   = mysqli_fetch_assoc($result);
 mysqli_stmt_close($stmt);
 
-// Verifikasi password dengan password_verify
-if ($user && password_verify($password, $user['password'])) {
+if (!$user) {
+    die(" USER TIDAK DITEMUKAN: " . htmlspecialchars($username));
+}
+
+if (!password_verify($password, $user['password'])) {
+    die(" PASSWORD SALAH!<br>
+        Input password: " . htmlspecialchars($password) . "<br>
+        Hash di database: " . $user['password']);
+}
 
     // Regenerate session ID untuk mencegah session fixation attack
     session_regenerate_id(true);
