@@ -48,7 +48,7 @@ $_SESSION['role'] = $user['role'];
 if ($user['role'] === 'administrator') {
     header("Location: dashboard.php");
 } else {
-    header("Location: index.php");
+    header("Location: /api/index.php");
 }
 exit();
 ?>
