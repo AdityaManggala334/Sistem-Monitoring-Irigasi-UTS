@@ -1,26 +1,38 @@
 <?php
-
-session_start();
 require_once 'koneksi.php';
-if (!isset($_SESSION['username'])) { header("Location: login.php"); exit(); }
 
-$namaDepan    = htmlspecialchars($_SESSION['nama_depan']    ?? '');
-$namaBelakang = htmlspecialchars($_SESSION['nama_belakang'] ?? '');
-$namaLengkap  = trim($namaDepan . ' ' . $namaBelakang) ?: htmlspecialchars($_SESSION['username']);
-$role         = $_SESSION['role'] ?? 'petani';
+// Ambil data user dari URL parameter (karena session tidak jalan di Vercel)
+if (isset($_GET['user_id']) && isset($_GET['username'])) {
+    $user_id = $_GET['user_id'];
+    $username = $_GET['username'];
+    $nama_depan = $_GET['nama_depan'] ?? '';
+    $nama_belakang = $_GET['nama_belakang'] ?? '';
+    $role = $_GET['role'] ?? 'petani';
+    
+    $namaDepan = htmlspecialchars($nama_depan);
+    $namaBelakang = htmlspecialchars($nama_belakang);
+    $namaLengkap = trim($namaDepan . ' ' . $namaBelakang) ?: htmlspecialchars($username);
+} else {
+    header("Location: login.php");
+    exit();
+}
 
-$pesan_laporan = ''; $pesan_warna = '';
+$pesan_laporan = ''; 
+$pesan_warna = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
     $nama_pelapor  = trim($_POST['nama_pelapor']  ?? '');
     $lokasi        = trim($_POST['lokasi_kendala'] ?? '');
     $jenis_kendala = trim($_POST['jenis_kendala']  ?? '');
+    
     if (empty($nama_pelapor) || empty($lokasi) || empty($jenis_kendala)) {
         $pesan_laporan = 'Mohon isi semua kolom sebelum mengirim laporan.';
         $pesan_warna   = 'error';
     } else {
-        $id_user = (int)($_SESSION['user_id'] ?? 0) ?: null;
+        $id_user = (int)$user_id ?: null;
         $stmt = mysqli_prepare($conn, "INSERT INTO laporan_kendala (id_users, nama_pelapor, lokasi, jenis_kendala) VALUES (?, ?, ?, ?)");
         mysqli_stmt_bind_param($stmt, 'isss', $id_user, $nama_pelapor, $lokasi, $jenis_kendala);
+        
         if (mysqli_stmt_execute($stmt)) {
             $pesan_laporan = 'Laporan berhasil dikirim! Petugas akan segera menangani.';
             $pesan_warna   = 'sukses';
@@ -32,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
     }
 }
 ?>
+    
 <!DOCTYPE html>
 <html lang="id">
 <head>
