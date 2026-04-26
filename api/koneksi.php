@@ -7,14 +7,14 @@ $pass = getenv('DB_PASS') ?: '1ifBBKYkZv9Zh4Bl';
 $db   = getenv('DB_NAME') ?: 'db_irigasi';
 
 // Inisialisasi mysqli
-$koneksi = mysqli_init();
+$conn = mysqli_init();
 
 // Menambahkan pengaturan SSL (Wajib untuk TiDB Serverless)
-mysqli_ssl_set($koneksi, NULL, NULL, NULL, NULL, NULL);
+mysqli_ssl_set($conn, NULL, NULL, NULL, NULL, NULL);
 
 // Melakukan koneksi
 $real_connect = mysqli_real_connect(
-    $koneksi, 
+    $conn, 
     $host, 
     $user, 
     $pass, 
