@@ -1,7 +1,6 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-session_start();
 require_once 'koneksi.php';
 
 if (!isset($_POST['login'])) {
@@ -37,18 +36,13 @@ if (!password_verify($password, $user['password'])) {
     die("PASSWORD SALAH!<br>Input: " . htmlspecialchars($password) . "<br>Hash DB: " . $user['password']);
 }
 
-// LANGSUNG PROSES SUKSES (tanpa if/else lagi)
-session_regenerate_id(true);
-$_SESSION['user_id'] = $user['id_users'];
-$_SESSION['username'] = $user['username'];
-$_SESSION['nama_depan'] = $user['nama_depan'];
-$_SESSION['nama_belakang'] = $user['nama_belakang'];
-$_SESSION['role'] = $user['role'];
+// Redirect dengan data user di URL (karena session tidak jalan)
+$redirect = "/api/index.php?user_id=" . $user['id_users'] . 
+            "&username=" . urlencode($user['username']) . 
+            "&nama_depan=" . urlencode($user['nama_depan']) . 
+            "&nama_belakang=" . urlencode($user['nama_belakang']) . 
+            "&role=" . $user['role'];
 
-if ($user['role'] === 'administrator') {
-    header("Location: /api/dashboard.php");
-} else {
-    header("Location: /api/index.php");
-}
+header("Location: " . $redirect);
 exit();
 ?>
