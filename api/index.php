@@ -231,45 +231,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
                 Diperbarui setiap 4 detik · 8 titik sensor aktif
             </div>
         </div>
-        <a href="peta.php" class="flex items-center gap-1 text-xs font-bold text-emerald-500 hover:text-emerald-700 no-underline">
+        <a href="peta.php" class="flex items-center gap-1 text-xs font-bold text-emerald-500 hover:text-emerald-700 transition-colors no-underline">
             Lihat Peta <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
         </a>
     </div>
     <div class="overflow-x-auto">
         <table class="w-full text-sm border-collapse">
             <thead>
-                <tr class="bg-gray-50">
-                    <th class="py-3 px-3 text-left text-xs font-bold uppercase text-slate-500 border-b w-12">NO</th>
-                    <th class="py-3 px-3 text-left text-xs font-bold uppercase text-slate-500 border-b">ID SENSOR</th>
-                    <th class="py-3 px-3 text-left text-xs font-bold uppercase text-slate-500 border-b">LOKASI</th>
-                    <th class="py-3 px-3 text-right text-xs font-bold uppercase text-slate-500 border-b w-24">DEBIT</th>
-                    <th class="py-3 px-3 text-right text-xs font-bold uppercase text-slate-500 border-b w-20">TMA</th>
-                    <th class="py-3 px-3 text-right text-xs font-bold uppercase text-slate-500 border-b w-20">SUHU</th>
-                    <th class="py-3 px-3 text-right text-xs font-bold uppercase text-slate-500 border-b w-24">LEMBAP</th>
-                    <th class="py-3 px-3 text-center text-xs font-bold uppercase text-slate-500 border-b w-24">STATUS</th>
-                    <th class="py-3 px-3 text-center text-xs font-bold uppercase text-slate-500 border-b w-24">WAKTU</th>
-                </tr>
+                <tr>
+                    <?php foreach (['No','ID Sensor','Lokasi','Debit (L/dtk)','TMA (cm)','Suhu (°C)','Lembap (%)','Status','Waktu'] as $h): ?>
+                    <th class="py-2.5 px-3.5 text-left text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/80 border-b" style="border-color:rgba(6,78,59,0.06);"><?= $h ?></th>
+                    <?php endforeach; ?>
+                </table>
             </thead>
             <tbody id="isi-tabel">
-                <tr>
-                    <td colspan="9" class="text-center py-8 text-slate-400">Memuat data sensor...</td>
-                </tr>
+                <!-- Data akan diisi JavaScript -->
             </tbody>
         </table>
-    </div>
-    <div class="grid grid-cols-3 gap-4 px-5 py-3 bg-slate-50/70 border-t">
-        <div class="text-center">
-            <div class="text-xs text-slate-500">Rata-rata Debit</div>
-            <div class="text-lg font-bold text-slate-800 mt-1"><span id="rata-debit">—</span> <span class="text-xs font-normal text-slate-400">L/dtk</span></div>
-        </div>
-        <div class="text-center">
-            <div class="text-xs text-slate-500">Rata-rata TMA</div>
-            <div class="text-lg font-bold text-slate-800 mt-1"><span id="rata-tma">—</span> <span class="text-xs font-normal text-slate-400">cm</span></div>
-        </div>
-        <div class="text-center">
-            <div class="text-xs text-slate-500">Status Normal</div>
-            <div class="text-lg font-bold text-slate-800 mt-1"><span id="sensor-aman">—</span></div>
-        </div>
     </div>
 </div>
     <!-- Summary bar -->
