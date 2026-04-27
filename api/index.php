@@ -1,16 +1,13 @@
 <?php
 require_once 'koneksi.php';
 
-// Ambil parameter dari URL path
-$path = $_SERVER['PATH_INFO'] ?? '';
-$segments = explode('/', trim($path, '/'));
-
-if (count($segments) >= 2) {
-    $user_id = $segments[0] ?? null;
-    $username = urldecode($segments[1] ?? '');
-    $nama_depan = urldecode($segments[2] ?? '');
-    $nama_belakang = urldecode($segments[3] ?? '');
-    $role = $segments[4] ?? 'petani';
+// Ambil parameter dari GET (simple)
+if (isset($_GET['user_id']) && isset($_GET['username'])) {
+    $user_id = $_GET['user_id'];
+    $username = $_GET['username'];
+    $nama_depan = $_GET['nama_depan'] ?? '';
+    $nama_belakang = $_GET['nama_belakang'] ?? '';
+    $role = $_GET['role'] ?? 'petani';
     
     $namaDepan = htmlspecialchars($nama_depan ?: $username);
     $namaBelakang = htmlspecialchars($nama_belakang);
