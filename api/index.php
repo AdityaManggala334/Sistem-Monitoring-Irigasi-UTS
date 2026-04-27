@@ -94,16 +94,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
   <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
 
     <!-- Logo -->
-    <a href="index.php" class="flex items-center gap-2.5 no-underline flex-shrink-0">
-      <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:rgba(16,185,129,0.18);border:1px solid rgba(52,211,153,0.25);">
+    <a href="/api/index.php?user_id=<?= $user_id ?>&username=<?= urlencode($username) ?>&nama_depan=<?= urlencode($nama_depan) ?>&nama_belakang=<?= urlencode($nama_belakang) ?>&role=<?= $role ?>" class="flex items-center gap-2.5 no-underline flex-shrink-0">
+    <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:rgba(16,185,129,0.18);border:1px solid rgba(52,211,153,0.25);">
         <svg width="20" height="20" viewBox="0 0 44 44" fill="none">
-          <path d="M22 7C22 7 13 18 13 24C13 29.52 17.03 34 22 34C26.97 34 31 29.52 31 24C31 18 22 7 22 7Z" fill="#10B981"/>
-          <line x1="18" y1="24" x2="26" y2="24" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-          <circle cx="18" cy="24" r="1.4" fill="white"/><circle cx="26" cy="24" r="1.4" fill="white"/>
-          <line x1="22" y1="20" x2="22" y2="28" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M22 7C22 7 13 18 13 24C13 29.52 17.03 34 22 34C26.97 34 31 29.52 31 24C31 18 22 7 22 7Z" fill="#10B981"/>
+            <line x1="18" y1="24" x2="26" y2="24" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="18" cy="24" r="1.4" fill="white"/><circle cx="26" cy="24" r="1.4" fill="white"/>
+            <line x1="22" y1="20" x2="22" y2="28" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
         </svg>
-      </div>
-      <span class="text-base font-extrabold text-white tracking-tight">SM Irigasi</span>
+    </div>
+    <span class="text-base font-extrabold text-white tracking-tight">SM Irigasi</span>
     </a>
 
     <!-- Nav links -->
@@ -113,20 +113,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         Monitor
       </a>
-      <a href="peta.php"    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all hover:bg-white/10" style="color:rgba(255,255,255,0.65);">
+      <a href="/api/peta.php?user_id=<?= $user_id ?>&username=<?= urlencode($username) ?>&nama_depan=<?= urlencode($nama_depan) ?>&nama_belakang=<?= urlencode($nama_belakang) ?>&role=<?= $role ?>" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all hover:bg-white/10" style="color:rgba(255,255,255,0.65);">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg>
         Peta
       </a>
-      <a href="bps.php" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all hover:bg-white/10" style="color:rgba(255,255,255,0.65);">
+      <a href="/api/bps.php?user_id=<?= $user_id ?>&username=<?= urlencode($username) ?>&nama_depan=<?= urlencode($nama_depan) ?>&nama_belakang=<?= urlencode($nama_belakang) ?>&role=<?= $role ?>" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all hover:bg-white/10" style="color:rgba(255,255,255,0.65);">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
         Data BPS
       </a>
-      <a href="riwayat.php" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all hover:bg-white/10" style="color:rgba(255,255,255,0.65);">
+      <a href="/api/riwayat.php?user_id=<?= $user_id ?>&username=<?= urlencode($username) ?>&nama_depan=<?= urlencode($nama_depan) ?>&nama_belakang=<?= urlencode($nama_belakang) ?>&role=<?= $role ?>" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all hover:bg-white/10" style="color:rgba(255,255,255,0.65);">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         Riwayat
       </a>
       <?php if ($role === 'administrator'): ?>
-      <a href="dashboard.php" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all hover:bg-white/10" style="color:rgba(255,255,255,0.65);">
+      <a href="/api/dashboard.php?user_id=<?= $user_id ?>&username=<?= urlencode($username) ?>&nama_depan=<?= urlencode($nama_depan) ?>&nama_belakang=<?= urlencode($nama_belakang) ?>&role=<?= $role ?>" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all hover:bg-white/10" style="color:rgba(255,255,255,0.65);">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         Admin
       </a>
@@ -146,7 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
             <div class="font-bold text-emerald-900 text-sm"><?= $namaLengkap ?></div>
             <div class="text-xs text-slate-500 mt-0.5 capitalize"><?= str_replace('_', ' ', $role) ?></div>
           </div>
-          <a href="logout.php" class="flex items-center gap-2 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors no-underline">
+          <a href="/api/logout.php" class="flex items-center gap-2 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors no-underline">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             Keluar
           </a>
@@ -188,10 +188,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             Lihat Data Sensor
           </a>
-          <a href="peta.php" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:bg-white/20"
-             style="background:rgba(255,255,255,0.10);color:rgba(255,255,255,0.85);border:1px solid rgba(255,255,255,0.18);">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg>
-            Peta Sensor
+          <a href="/api/peta.php?user_id=<?= $user_id ?>&username=<?= urlencode($username) ?>&nama_depan=<?= urlencode($nama_depan) ?>&nama_belakang=<?= urlencode($nama_belakang) ?>&role=<?= $role ?>" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:bg-white/20" style="background:rgba(255,255,255,0.10);color:rgba(255,255,255,0.85);border:1px solid rgba(255,255,255,0.18);">
+           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg>
+           Peta Sensor
           </a>
         </div>
       </div>
@@ -220,15 +219,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
   </div>
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
     <?php foreach ([
-      ['peta.php',     'Peta Sensor',       'Lihat posisi dan status 8 sensor di lapangan secara visual interaktif.', 'Buka Peta', '#15803D', 'green',
-       '<polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>'],
-      ['bps.php',      'Data BPS',          'Data luas panen, produktivitas, dan produksi padi dari BPS Jawa Tengah.','Lihat Data','#1D4ED8','blue',
-       '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>'],
-      ['riwayat.php',  'Riwayat Data',      'Analitik historis pembacaan sensor dengan filter dan ekspor CSV.',       'Lihat Riwayat','#6D28D9','violet',
-       '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>'],
-      ['#lapor',       'Laporan Kendala',   'Laporkan masalah irigasi agar petugas dapat segera menangani.',          'Buat Laporan','#92400E','amber',
-       '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>'],
-    ] as [$href, $title, $desc, $cta, $color, $scheme, $ico]): ?>
+      ['/api/peta.php?user_id='.$user_id.'&username='.urlencode($username).'&nama_depan='.urlencode($nama_depan).'&nama_belakang='.urlencode($nama_belakang).'&role='.$role, 'Peta Sensor', 'Lihat posisi dan status 8 sensor di lapangan secara visual interaktif.', 'Buka Peta', '#15803D', 'green', '<polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>'],
+      ['/api/bps.php?user_id='.$user_id.'&username='.urlencode($username).'&nama_depan='.urlencode($nama_depan).'&nama_belakang='.urlencode($nama_belakang).'&role='.$role, 'Data BPS', 'Data luas panen, produktivitas, dan produksi padi dari BPS Jawa Tengah.', 'Lihat Data', '#1D4ED8', 'blue', '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>'],
+      ['/api/riwayat.php?user_id='.$user_id.'&username='.urlencode($username).'&nama_depan='.urlencode($nama_depan).'&nama_belakang='.urlencode($nama_belakang).'&role='.$role, 'Riwayat Data', 'Analitik historis pembacaan sensor dengan filter dan ekspor CSV.', 'Lihat Riwayat', '#6D28D9', 'violet', '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>'],
+      ['#lapor', 'Laporan Kendala', 'Laporkan masalah irigasi agar petugas dapat segera menangani.', 'Buat Laporan', '#92400E', 'amber', '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>'],
+    ]) as [$href, $title, $desc, $cta, $color, $scheme, $ico]: ?>
     <a href="<?= $href ?>" class="group bg-white rounded-2xl p-5 border transition-all hover:-translate-y-1 hover:shadow-lg no-underline flex flex-col gap-3 relative overflow-hidden"
        style="border-color:rgba(6,78,59,0.08);box-shadow:0 1px 3px rgba(6,78,59,0.05),0 8px 24px rgba(6,78,59,0.06);">
       <div class="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl"
@@ -308,7 +303,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
           Diperbarui setiap 4 detik · 8 titik sensor aktif
         </div>
       </div>
-      <a href="peta.php" class="flex items-center gap-1 text-xs font-bold text-emerald-500 hover:text-emerald-700 transition-colors no-underline">
+      <a href="/api/peta.php?user_id=<?= $user_id ?>&username=<?= urlencode($username) ?>&nama_depan=<?= urlencode($nama_depan) ?>&nama_belakang=<?= urlencode($nama_belakang) ?>&role=<?= $role ?>" class="flex items-center gap-1 text-xs font-bold text-emerald-500 hover:text-emerald-700 transition-colors no-underline">
         Lihat Peta <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
       </a>
     </div>
