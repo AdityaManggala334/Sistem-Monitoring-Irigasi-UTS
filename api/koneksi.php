@@ -27,4 +27,3 @@ $real_connect = mysqli_real_connect(
 if (!$real_connect) {
     die("Koneksi ke TiDB Cloud gagal: " . mysqli_connect_error());
 }
-?>
