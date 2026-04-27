@@ -1,10 +1,27 @@
 <?php
-
-session_start();
 require_once 'koneksi.php';
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'administrator') {
-    header("Location: index.php"); exit();
+// Ambil parameter dari URL path
+$path = $_SERVER['PATH_INFO'] ?? '';
+$segments = explode('/', trim($path, '/'));
+
+if (count($segments) >= 2) {
+    $user_id = $segments[0];
+    $username = urldecode($segments[1]);
+    $nama_depan = urldecode($segments[2] ?? '');
+    $nama_belakang = urldecode($segments[3] ?? '');
+    $role = $segments[4] ?? 'petani';
+    $adminNama = htmlspecialchars($nama_depan ?: $username);
+    $adminId = (int)$user_id;
+    
+    // Cek role administrator
+    if ($role !== 'administrator') {
+        header("Location: /api/index.php/" . $user_id . "/" . urlencode($username) . "/" . urlencode($nama_depan) . "/" . urlencode($nama_belakang) . "/" . $role);
+        exit();
+    }
+} else {
+    header("Location: login.php");
+    exit();
 }
 
 $adminNama = trim(($_SESSION['nama_depan']??'').' '.($_SESSION['nama_belakang']??'')) ?: ($_SESSION['username']??'Admin');
