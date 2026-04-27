@@ -1,7 +1,5 @@
 <?php
-
-session_start();
-session_unset();    // Hapus semua variabel session
-session_destroy();
+// Hapus cookie sm_uid
+setcookie('sm_uid', '', time() - 3600, '/', '', false, true);
 header("Location: login.php");
 exit();
