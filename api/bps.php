@@ -1,77 +1,101 @@
 <?php
+// Memuat file koneksi database dan helper autentikasi (session, role)
 require_once 'koneksi.php';
 require_once 'auth_helper.php';
 
-// ── Ambil data dari API BPS via cURL
+// Fungsi untuk mengambil data dari API BPS menggunakan cURL
 function fetchBPS(string $url): ?array {
+    // Cek apakah fungsi cURL tersedia di server
     if (!function_exists('curl_init')) return null;
 
+    // Inisialisasi cURL dengan URL yang diberikan
     $ch = curl_init($url);
+    // Set opsi cURL: ambil response sebagai string, ikuti redirect, timeout 15 detik
     curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_TIMEOUT        => 15,
-        CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_SSL_VERIFYHOST => false,
-        CURLOPT_USERAGENT      => 'SMIrigasi/1.0',
+        CURLOPT_RETURNTRANSFER => true,   // Mengembalikan response sebagai string
+        CURLOPT_FOLLOWLOCATION => true,   // Mengikuti redirect jika ada
+        CURLOPT_TIMEOUT        => 15,     // Batas waktu 15 detik
+        CURLOPT_SSL_VERIFYPEER => false,  // Nonaktifkan verifikasi SSL (untuk lingkungan lokal)
+        CURLOPT_SSL_VERIFYHOST => false,  // Nonaktifkan verifikasi host SSL
+        CURLOPT_USERAGENT      => 'SMIrigasi/1.0', // User agent untuk request
     ]);
-    $raw  = curl_exec($ch);
-    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
+    $raw  = curl_exec($ch);      // Eksekusi cURL
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); // Ambil kode HTTP response
+    curl_close($ch);             // Tutup koneksi cURL
 
+    // Jika gagal atau bukan HTTP 200, kembalikan null
     if (!$raw || $code !== 200) return null;
+    // Decode JSON menjadi array asosiatif
     $data = json_decode($raw, true);
+    // Cek apakah JSON valid, jika ya kembalikan data
     return json_last_error() === JSON_ERROR_NONE ? $data : null;
 }
 
-// Parser: ekstrak baris data dari struktur BPS
+// Fungsi untuk mengekstrak baris data dari struktur response BPS
 function parseBPS(array $response): array {
-    $rows  = $response['data'][1]['data']  ?? [];
-    $judul = $response['data'][1]['judul_tabel'] ?? '';
+    // Ambil data dari struktur response BPS
+    $rows  = $response['data'][1]['data']  ?? [];   // Data wilayah
+    $judul = $response['data'][1]['judul_tabel'] ?? ''; // Judul tabel
     $result = [];
 
     foreach ($rows as $row) {
+        // Lewati baris total Jawa Tengah (kode 3300000)
         if (($row['kode_wilayah'] ?? '') === '3300000') continue;
+
+        // Fungsi untuk membersihkan format angka BPS (125.882,00 -> 125882.00)
         $clean = fn($v) => floatval(str_replace(['.', ','], ['', '.'], $v));
+
+        // Simpan data wilayah ke dalam array
         $result[] = [
-            'wilayah'       => $row['label'] ?? '-',
-            'kode'          => $row['kode_wilayah'] ?? '',
-            'luas_panen'    => $clean($row['variables']['qjt4tgvtld']['value'] ?? '0'),
-            'produktivitas' => $clean($row['variables']['od6zj61thq']['value'] ?? '0'),
-            'produksi'      => $clean($row['variables']['mtn492ybb1']['value'] ?? '0'),
+            'wilayah'       => $row['label'] ?? '-',        // Nama kabupaten/kota
+            'kode'          => $row['kode_wilayah'] ?? '',  // Kode wilayah
+            'luas_panen'    => $clean($row['variables']['qjt4tgvtld']['value'] ?? '0'), // Luas panen (Ha)
+            'produktivitas' => $clean($row['variables']['od6zj61thq']['value'] ?? '0'), // Produktivitas (ku/Ha)
+            'produksi'      => $clean($row['variables']['mtn492ybb1']['value'] ?? '0'), // Produksi (ton)
         ];
     }
+    // Urutkan berdasarkan luas panen terbesar ke terkecil
     usort($result, fn($a, $b) => $b['luas_panen'] <=> $a['luas_panen']);
     return ['rows' => $result, 'judul' => $judul];
 }
 
-// Eksekusi API
+// URL API BPS (endpoint untuk data Jawa Tengah tahun 2025)
 $API_URL = 'https://webapi.bps.go.id/v1/api/interoperabilitas/datasource/simdasi/id/25/tahun/2025/id_tabel/ZjZ6MXlacGJNR0JaaHBPRSs0TzNUdz09/wilayah/3300000/key/cc819bdc45f65b22eebcb08f167d0e08';
 
-$raw      = fetchBPS($API_URL);
-$parsed   = $raw ? parseBPS($raw) : ['rows' => [], 'judul' => ''];
-$listData = $parsed['rows'];
-$judul    = $parsed['judul'];
-$hasData  = count($listData) > 0;
+// Eksekusi pengambilan dan parsing data
+$raw      = fetchBPS($API_URL);                      // Ambil data dari API
+$parsed   = $raw ? parseBPS($raw) : ['rows' => [], 'judul' => '']; // Parse atau default kosong
+$listData = $parsed['rows'];    // Array data wilayah
+$judul    = $parsed['judul'];   // Judul tabel dari BPS
+$hasData  = count($listData) > 0; // Cek apakah ada data
 
-// Statistik
-$totalLuas     = array_sum(array_column($listData, 'luas_panen'));
-$totalProduksi = array_sum(array_column($listData, 'produksi'));
-$jumlah        = count($listData);
-$terluas       = $listData[0] ?? null;
-$rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas')) / $jumlah : 0;
+// Hitung statistik agregat
+$totalLuas     = array_sum(array_column($listData, 'luas_panen'));      // Total luas panen
+$totalProduksi = array_sum(array_column($listData, 'produksi'));        // Total produksi
+$jumlah        = count($listData);                                      // Jumlah wilayah
+$terluas       = $listData[0] ?? null;                                  // Wilayah dengan luas panen terbesar
+$rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas')) / $jumlah : 0; // Rata-rata produktivitas
 ?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <!-- META DATA DAN KONFIGURASI HALAMAN -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Data BPS — SM Irigasi</title>
+    
+    <!-- CSS Framework Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Library Chart.js untuk grafik -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Google Font: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
+        /* ROOT VARIABLES (Warna dan bayangan utama) */
         :root {
             --green-900: #064E3B;
             --green-700: #047857;
@@ -81,6 +105,7 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
             --border:    rgba(6,78,59,0.08);
             --shadow:    0 1px 3px rgba(6,78,59,0.06), 0 8px 24px rgba(6,78,59,0.07);
         }
+        /* RESET CSS */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -89,7 +114,7 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
             min-height: 100vh;
         }
 
-        /* Navbar Responsive */
+        /* STYLE NAVBAR RESPONSIVE */
         nav {
             background: rgba(6,78,59,0.97);
             backdrop-filter: blur(16px);
@@ -115,8 +140,10 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
         .nav-brand-text { font-size: .85rem; font-weight: 800; color: white; letter-spacing: -.02em; }
         .nav-brand-sub  { font-size: .6rem; font-weight: 600; color: rgba(255,255,255,.35); text-transform: uppercase; letter-spacing: .08em; }
         @media (min-width: 640px) { .nav-brand-text { font-size: .95rem; } .nav-brand-sub { font-size: .65rem; } }
+        /* Sembunyikan teks brand di HP sangat kecil */
         @media (max-width: 450px) { .nav-brand-text { display: none; } .nav-brand-sub { display: none; } }
         
+        /* Menu navigasi */
         .nav-links { display: flex; align-items: center; gap: 2px; }
         .nav-link {
             display: flex; align-items: center; gap: 4px;
@@ -126,17 +153,17 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
             text-decoration: none; transition: all .18s;
         }
         @media (min-width: 640px) { .nav-link { padding: 6px 13px; font-size: .82rem; gap: 6px; } }
-        @media (max-width: 500px) { .nav-link span { display: none; } }
+        @media (max-width: 500px) { .nav-link span { display: none; } } /* Sembunyikan teks menu di HP */
         
         .nav-link:hover    { background: rgba(255,255,255,.10); color: white; }
         .nav-link.active   { background: rgba(16,185,129,.20); color: #34D399; font-weight: 600; }
         .nav-link.danger   { background: rgba(239,68,68,.12); color: rgba(255,180,180,.9); }
 
-        /* Main Content */
+        /* KONTEN UTAMA */
         .page { max-width: 1200px; margin: 0 auto; padding: 1rem; }
         @media (min-width: 640px) { .page { padding: 2rem 1.5rem; } }
 
-        /* Page Header */
+        /* HEADER HALAMAN */
         .page-header { margin-bottom: 1rem; }
         @media (min-width: 640px) { .page-header { margin-bottom: 1.75rem; } }
         
@@ -146,6 +173,7 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
         .page-header p  { font-size: .7rem; color: #4B7563; margin-top: 4px; }
         @media (min-width: 640px) { .page-header p { font-size: .82rem; } }
         
+        /* Status chip (koneksi API) */
         .status-chip {
             display: inline-flex; align-items: center; gap: 6px;
             margin-top: 8px; padding: 3px 10px;
@@ -160,7 +188,7 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
         
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-        /* KPI Grid - Responsive */
+        /* KPI GRID (Card statistik) Responsive */
         .kpi-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -181,6 +209,7 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
         @media (min-width: 768px) { .kpi-card { padding: 1.2rem 1.3rem; } }
         
         .kpi-card:hover { transform: translateY(-2px); }
+        /* Garis aksen di sisi kiri card */
         .kpi-card::before {
             content: ''; position: absolute;
             top: 0; left: 0; width: 3px; height: 100%;
@@ -201,7 +230,7 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
         .kpi-sub   { font-size: 0.6rem; color: #4B7563; }
         @media (min-width: 640px) { .kpi-sub { font-size: .75rem; } }
 
-        /* Main Grid */
+        /* MAIN GRID (Chart + Top 5) */
         .main-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -210,7 +239,7 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
         }
         @media (min-width: 900px) { .main-grid { grid-template-columns: 1fr 320px; gap: 1.25rem; margin-bottom: 1.5rem; } }
 
-        /* Panel */
+        /* PANEL CARD */
         .panel {
             background: white; border: 1px solid var(--border);
             border-radius: 14px; overflow: hidden;
@@ -236,7 +265,7 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
         .panel-body  { padding: 0.75rem; }
         @media (min-width: 640px) { .panel-body { padding: 1.1rem 1.25rem; } }
 
-        /* Bar Chart Items */
+        /* BAR CHART ITEMS (Untuk 5 peringkat teratas) */
         .bar-item { margin-bottom: 0.8rem; }
         @media (min-width: 640px) { .bar-item { margin-bottom: 1rem; } }
         
@@ -253,7 +282,7 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
         .bar-fill { height: 4px; background: linear-gradient(90deg, #10B981, #34D399); border-radius: 4px; transition: width .7s; }
         @media (min-width: 640px) { .bar-fill { height: 5px; } }
 
-        /* Table Wrapper */
+        /* TABEL WRAPPER */
         .tbl-wrap { background: white; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); }
         @media (min-width: 640px) { .tbl-wrap { border-radius: 16px; } }
         
@@ -268,6 +297,7 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
         }
         @media (min-width: 640px) { .tbl-head { padding: 1rem 1.4rem .75rem; } }
         
+        /* Scroll untuk tabel */
         .scroll-body { max-height: 350px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         @media (min-width: 640px) { .scroll-body { max-height: 440px; } }
         
@@ -276,7 +306,7 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
         
         .scroll-body::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 4px; }
 
-        /* Table Responsive */
+        /* TABEL RESPONSIVE */
         table { width: 100%; border-collapse: collapse; min-width: 500px; }
         @media (max-width: 500px) { table { min-width: 400px; } }
         
@@ -298,6 +328,7 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
         .idx  { color: #CBD5E1; font-size: 0.65rem; }
         @media (min-width: 640px) { .idx { font-size: .75rem; } }
         
+        /* Badge peringkat untuk 3 besar */
         .rank-badge {
             display: inline-block; width: 18px; height: 18px;
             border-radius: 5px; text-align: center; line-height: 18px;
@@ -309,7 +340,7 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
         .rank-2 { background: #F1F5F9; color: #475569; }
         .rank-3 { background: #FFF7ED; color: #9A3412; }
 
-        /* Error Box */
+        /* ERROR BOX (jika gagal memuat data) */
         .err-box {
             background: #FEF2F2; border: 1px solid #FECACA;
             border-radius: 14px; padding: 1.5rem; text-align: center;
@@ -320,7 +351,7 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
         .err-box p  { font-size: 0.7rem; color: #B91C1C; }
         @media (min-width: 640px) { .err-box h3 { font-size: .95rem; margin-bottom: 8px; } .err-box p { font-size: .82rem; } }
 
-        /* Footer */
+        /* FOOTER */
         footer {
             margin-top: 1.5rem;
             padding: 0.75rem 1rem;
@@ -331,15 +362,17 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
         }
         @media (min-width: 640px) { footer { margin-top: 2.5rem; padding: 1rem 1.5rem; font-size: .73rem; } }
         
-        /* Canvas Chart Responsive */
+        /* CANVAS CHART RESPONSIVE */
         canvas { width: 100% !important; height: auto !important; max-height: 200px; }
         @media (min-width: 640px) { canvas { max-height: 230px; } }
     </style>
 </head>
 <body>
 
+<!-- NAVBAR (Navigasi Utama) -->
 <nav>
     <div class="nav-inner">
+        <!-- Logo / Brand -->
         <a href="index.php" class="nav-brand">
             <div class="nav-brand-icon">
                 <svg width="16" height="16" viewBox="0 0 44 44" fill="none">
@@ -352,6 +385,8 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
                 <div class="nav-brand-sub">Monitoring</div>
             </div>
         </a>
+        
+        <!-- Menu Navigasi -->
         <div class="nav-links">
             <a href="index.php" class="nav-link">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
@@ -369,6 +404,7 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 <span>Riwayat</span>
             </a>
+            <!-- Tampilkan link Admin hanya jika role administrator -->
             <?php if ($role === 'administrator'): ?>
             <a href="dashboard.php" class="nav-link">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -383,8 +419,10 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
     </div>
 </nav>
 
+<!-- KONTEN UTAMA -->
 <div class="page">
 
+    <!-- HEADER HALAMAN -->
     <div class="page-header">
         <h1>Data Pertanian BPS</h1>
         <p><?= htmlspecialchars($judul ?: 'Luas Panen, Produktivitas, dan Produksi Padi - Jawa Tengah 2025'); ?></p>
@@ -398,6 +436,7 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
         <?php endif; ?>
     </div>
 
+    <!-- TAMPILKAN PESAN ERROR JIKA GAGAL LOAD DATA -->
     <?php if (!$hasData): ?>
     <div class="err-box">
         <h3>Gagal Memuat Data</h3>
@@ -405,8 +444,10 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
     </div>
     <?php endif; ?>
 
+    <!-- TAMPILKAN DATA JIKA BERHASIL -->
     <?php if ($hasData): ?>
 
+    <!-- KPI CARDS (4 Kartu Statistik) -->
     <div class="kpi-grid">
         <div class="kpi-card">
             <div class="kpi-label">Total Luas Panen</div>
@@ -430,7 +471,9 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
         </div>
     </div>
 
+    <!-- SECTION CHART + TOP 5 (2 Kolom) -->
     <div class="main-grid">
+        <!-- Kiri: Chart Distribusi -->
         <div class="panel">
             <div class="panel-head">
                 <div>
@@ -443,6 +486,7 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
             </div>
         </div>
 
+        <!-- Kanan: Peringkat 5 Besar -->
         <div class="panel">
             <div class="panel-head">
                 <div>
@@ -471,6 +515,7 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
         </div>
     </div>
 
+    <!-- TABEL DATA LENGKAP -->
     <div class="tbl-wrap">
         <div class="tbl-head">
             <div>
@@ -516,21 +561,27 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
     <?php endif; ?>
 </div>
 
+<!-- FOOTER -->
 <footer>
     &copy; 2026 SM Irigasi - Universitas Sebelas Maret · Sumber Data: Badan Pusat Statistik
 </footer>
 
+<!-- JAVASCRIPT UNTUK CHART -->
 <?php if ($hasData): ?>
 <script>
+    // Ambil data 20 wilayah teratas untuk chart
     const chartData = <?= json_encode(array_slice($listData, 0, 20)); ?>;
-    const labels    = chartData.map(d => d.wilayah);
-    const values    = chartData.map(d => d.luas_panen);
+    const labels    = chartData.map(d => d.wilayah);  // Label sumbu X (nama wilayah)
+    const values    = chartData.map(d => d.luas_panen); // Nilai sumbu Y (luas panen)
 
+    // Inisialisasi canvas chart
     const ctx  = document.getElementById('bpsChart').getContext('2d');
+    // Gradasi warna untuk bar chart
     const grad = ctx.createLinearGradient(0, 0, 0, 200);
-    grad.addColorStop(0, '#10B981');
-    grad.addColorStop(1, '#D1FAE5');
+    grad.addColorStop(0, '#10B981');   // Warna atas hijau terang
+    grad.addColorStop(1, '#D1FAE5');   // Warna bawah hijau muda
 
+    // Buat chart dengan Chart.js
     new Chart(ctx, {
         type: 'bar',
         data: {
@@ -549,7 +600,7 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
             responsive: true,
             maintainAspectRatio: true,
             plugins: {
-                legend: { display: false },
+                legend: { display: false },  // Sembunyikan legend
                 tooltip: {
                     callbacks: {
                         label: (ctx) => ' ' + ctx.parsed.y.toLocaleString('id-ID') + ' Ha'
@@ -578,6 +629,7 @@ $rataProduktiv = $jumlah > 0 ? array_sum(array_column($listData, 'produktivitas'
         }
     });
     
+    // Event resize window untuk resize chart
     window.addEventListener('resize', function() {
         setTimeout(function() {
             const chart = Chart.getChart('bpsChart');
