@@ -1,5 +1,7 @@
 <?php
 ob_start();
+error_reporting(E_ALL);
+ini_set('dispay_errors', 1);
 require_once 'koneksi.php';
 require_once 'auth_helper.php';
 
