@@ -132,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
   <!--  HERO with Image  -->
   <div class="relative rounded-3xl overflow-hidden mb-8 fade-up" style="min-height:340px;">
     <!-- Background image -->
-    <img src="/assets/hero-irigasi.png" alt="Irigasi Sawah"
+    <img src="/hero-irigasi.png" alt="Irigasi Sawah"
          class="absolute inset-0 w-full h-full object-cover object-center">
     <!-- Gradient overlay -->
     <div class="absolute inset-0" style="background:linear-gradient(100deg,rgba(2,44,34,0.88) 0%,rgba(6,78,59,0.65) 55%,rgba(6,78,59,0.20) 100%);"></div>
