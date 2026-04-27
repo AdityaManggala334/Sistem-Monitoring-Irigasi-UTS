@@ -16,6 +16,7 @@ if (count($segments) >= 2) {
     header("Location: login.php");
     exit();
 }
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
