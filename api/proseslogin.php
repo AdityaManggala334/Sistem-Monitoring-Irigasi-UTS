@@ -28,21 +28,15 @@ $result = mysqli_stmt_get_result($stmt);
 $user = mysqli_fetch_assoc($result);
 mysqli_stmt_close($stmt);
 
-if (!$user) {
-    die("USER TIDAK DITEMUKAN: " . htmlspecialchars($username));
+if (!$user || !password_verify($password, $user['password'])) {
+    header("Location: login.php?error=salah");
+    exit();
 }
 
-if (!password_verify($password, $user['password'])) {
-    die("PASSWORD SALAH!<br>Input: " . htmlspecialchars($password) . "<br>Hash DB: " . $user['password']);
-}
+// Simpan user_id ke cookie (berlaku 8 jam)
+$expire = time() + (8 * 60 * 60);
+setcookie('sm_uid',  (string)$user['id_users'], $expire, '/', '', false, true);
 
-// Kirim data via GET parameter (lebih sederhana)
-$redirect = "/api/index.php?user_id=" . $user['id_users'] . 
-            "&username=" . urlencode($user['username']) . 
-            "&nama_depan=" . urlencode($user['nama_depan']) . 
-            "&nama_belakang=" . urlencode($user['nama_belakang']) . 
-            "&role=" . $user['role'];
-
-header("Location: " . $redirect);
+// Redirect ke index.php — tanpa parameter URL
+header("Location: index.php");
 exit();
-?>
