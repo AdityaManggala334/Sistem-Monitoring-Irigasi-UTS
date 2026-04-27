@@ -39,7 +39,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SM Irigasi — Beranda</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="/scripts.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -131,23 +130,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
 
  <!--  HERO with Image  -->
   <div class="relative rounded-3xl overflow-hidden mb-8 fade-up" style="min-height:340px;">
-    <!-- Background image -->
-    <img src="https://i.imgur.com/elrEGQB.jpeg" alt="Irigasi Sawah"
-     class="absolute inset-0 w-full h-full object-cover"
-     style="object-position: center 40%;">
-    <!-- Gradient overlay -->
+    <img src="https://i.imgur.com/elrEGQB.jpeg" alt="Irigasi Sawah" class="absolute inset-0 w-full h-full object-cover" style="object-position: center 40%;">
     <div class="absolute inset-0" style="background:linear-gradient(100deg,rgba(2,44,34,0.88) 0%,rgba(6,78,59,0.65) 55%,rgba(6,78,59,0.20) 100%);"></div>
-    <!-- Grid overlay -->
     <div class="absolute inset-0 opacity-5" style="background-image:linear-gradient(rgba(255,255,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,1) 1px,transparent 1px);background-size:48px 48px;"></div>
-    <!-- Overlay tipis agar teks terbaca -->
     <div class="absolute inset-0" style="background: rgba(0,0,0,0.3);"></div>
 
-    <!-- Content -->
     <div class="relative z-10 flex items-center justify-between gap-8 p-10 flex-wrap" style="min-height:340px;">
       <div class="max-w-lg">
         <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-4" style="background:rgba(16,185,129,0.20);border:1px solid rgba(52,211,153,0.30);color:#34D399;">
-          <span class="live-dot"></span>
-          Sistem Aktif · Update Setiap 4 Detik
+          <span class="live-dot"></span> Sistem Aktif · Update Setiap 4 Detik
         </div>
         <h1 class="text-3xl sm:text-4xl font-extrabold text-white leading-tight tracking-tight mb-3">
           Sistem Monitoring<br>Irigasi Sawah <span class="text-emerald-400">Cerdas</span>
@@ -193,8 +184,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
       <h2 class="text-base font-bold text-emerald-900 mb-3 pb-2 inline-block border-b-2 border-emerald-500">Tentang Sistem</h2>
       <p class="text-sm text-slate-500 leading-relaxed mb-4">Platform berbasis web yang mengumpulkan dan menampilkan data dari sensor di jaringan irigasi sawah secara real-time untuk mendukung efisiensi pertanian.</p>
       <div class="grid grid-cols-2 gap-2.5">
-        <?php foreach (['Monitor Debit', 'Sensor flow meter otomatis', 'TMA Presisi', 'Sensor ultrasonik akurasi tinggi', 'Notifikasi', 'Peringatan ambang batas aman', 'Peta Visual', 'Posisi sensor di lapangan'] as $i => $item): if ($i % 2 == 0 && $i > 0) continue; ?>
-        <?php endforeach; ?>
         <?php foreach ([
           ['Monitor Debit', 'Sensor flow meter otomatis'],
           ['TMA Presisi', 'Sensor ultrasonik akurasi tinggi'],
@@ -216,7 +205,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
           <th class="py-2 px-3 text-xs font-bold uppercase tracking-wide text-white rounded-l-xl" style="background:#064E3B;">#</th>
           <th class="py-2 px-3 text-xs font-bold uppercase tracking-wide text-white" style="background:#064E3B;">Keterangan</th>
           <th class="py-2 px-3 text-xs font-bold uppercase tracking-wide text-white rounded-r-xl" style="background:#064E3B;">Detail</th>
-        </tr></thead>
+        </table></thead>
         <tbody>
           <?php foreach ([
             ['1','Nama Sistem','SM Irigasi'],
@@ -249,7 +238,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
       <a href="peta.php" class="flex items-center gap-1 text-xs font-bold text-emerald-500 hover:text-emerald-700 no-underline">Lihat Peta →</a>
     </div>
     <div class="overflow-x-auto">
-      <table class="w-full text-sm border-collapse">
+      <table class="w-full text-sm border-collapse" id="isi-tabel">
         <thead>
           <tr>
             <?php foreach (['No','ID Sensor','Lokasi','Debit','TMA','Suhu','Lembap','Status','Waktu'] as $h): ?>
@@ -271,26 +260,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
   <div id="lapor" class="bg-white rounded-2xl p-6 border mb-8" style="border-color:rgba(6,78,59,0.08);box-shadow:0 1px 3px rgba(6,78,59,0.05),0 8px 24px rgba(6,78,59,0.06);">
     <h2 class="font-bold text-slate-700 mb-1">Laporan Kendala Irigasi</h2>
     <p class="text-xs text-slate-400 mb-5">Petani atau petugas dapat melaporkan masalah irigasi melalui formulir berikut</p>
-    <form method="POST">
+    <form method="POST" onsubmit="return kirimLaporan()">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-        <div><label class="text-xs font-bold uppercase text-slate-500">Nama Pelapor</label><input type="text" name="nama_pelapor" value="<?= $namaLengkap ?>" required class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-sm"></div>
-        <div><label class="text-xs font-bold uppercase text-slate-500">Lokasi Kendala</label><input type="text" name="lokasi_kendala" placeholder="Contoh: Saluran Ngalor D" required class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-sm"></div>
+        <div>
+          <label class="text-xs font-bold uppercase text-slate-500">Nama Pelapor</label>
+          <input type="text" id="nama-pelapor" name="nama_pelapor" value="<?= $namaLengkap ?>" required class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-sm">
+        </div>
+        <div>
+          <label class="text-xs font-bold uppercase text-slate-500">Lokasi Kendala</label>
+          <input type="text" id="lokasi-kendala" name="lokasi_kendala" placeholder="Contoh: Saluran Ngalor D" required class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-sm">
+        </div>
       </div>
-      <div class="mb-5"><label class="text-xs font-bold uppercase text-slate-500">Jenis Kendala</label>
-      <select name="jenis_kendala" required class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-sm">
-        <option value="">— Pilih Jenis Kendala —</option>
-        <option>Debit air terlalu kecil</option>
-        <option>Debit air terlalu besar / banjir</option>
-        <option>Sensor tidak terbaca</option>
-        <option>Saluran tersumbat</option>
-        <option>Pintu air rusak</option>
-        <option>Lainnya</option>
-      </select></div>
+      <div class="mb-5">
+        <label class="text-xs font-bold uppercase text-slate-500">Jenis Kendala</label>
+        <select id="jenis-kendala" name="jenis_kendala" required class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-sm">
+          <option value="">— Pilih Jenis Kendala —</option>
+          <option>Debit air terlalu kecil</option>
+          <option>Debit air terlalu besar / banjir</option>
+          <option>Sensor tidak terbaca</option>
+          <option>Saluran tersumbat</option>
+          <option>Pintu air rusak</option>
+          <option>Lainnya</option>
+        </select>
+      </div>
       <button type="submit" name="kirim_laporan" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-0.5" style="background:linear-gradient(135deg,#065F46,#064E3B);box-shadow:0 4px 16px rgba(6,78,59,0.25);">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         Kirim Laporan
       </button>
     </form>
+    <div id="pesan-form" style="display:none;"></div>
     <?php if ($pesan_laporan): ?>
     <div class="flex items-center gap-2 mt-4 px-4 py-3 rounded-xl text-sm font-medium" style="<?= $pesan_warna === 'sukses' ? 'background:#F0FDF4;border:1px solid #BBF7D0;color:#166534;' : 'background:#FEF2F2;border:1px solid #FECACA;color:#991B1B;' ?>">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><?= $pesan_warna === 'sukses' ? '<polyline points="20 6 9 17 4 12"/>' : '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>' ?></svg>
@@ -303,5 +301,111 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
 <footer class="text-center py-5 text-xs mt-4" style="background:#064E3B;color:rgba(255,255,255,0.40);">
   © 2026 Sistem Monitoring Irigasi Sawah — Universitas Sebelas Maret
 </footer>
+
+<script>
+// ========== DATA SENSOR ==========
+var dataSensor = [
+    { id: "SNS-01", lokasi: "Saluran Induk Ngidul", debit: 12.4, tma: 42, suhu: 26.8, lembap: 68, status: "normal" },
+    { id: "SNS-02", lokasi: "Percabangan Blok A",  debit: 8.7,  tma: 35, suhu: 27.1, lembap: 72, status: "normal" },
+    { id: "SNS-03", lokasi: "Saluran Blok B",      debit: 3.2,  tma: 18, suhu: 28.3, lembap: 45, status: "rendah" },
+    { id: "SNS-04", lokasi: "Bak Penampungan C1",  debit: 18.9, tma: 71, suhu: 26.2, lembap: 80, status: "tinggi" },
+    { id: "SNS-05", lokasi: "Saluran Ngalor D",  debit: 6.5,  tma: 28, suhu: 27.8, lembap: 63, status: "normal" },
+    { id: "SNS-06", lokasi: "Saluran Ngetan E",   debit: 1.1,  tma: 10, suhu: 29.0, lembap: 31, status: "kritis" },
+    { id: "SNS-07", lokasi: "Saluran Petak 12",        debit: 9.3,  tma: 38, suhu: 26.5, lembap: 70, status: "normal" },
+    { id: "SNS-08", lokasi: "Embung Ngulon",    debit: 7.8,  tma: 32, suhu: 27.4, lembap: 66, status: "normal" }
+];
+
+// ========== FUNGSI SENSOR ==========
+function waktuSekarang() {
+    var now = new Date();
+    var h = String(now.getHours()).padStart(2, "0");
+    var m = String(now.getMinutes()).padStart(2, "0");
+    var s = String(now.getSeconds()).padStart(2, "0");
+    return h + ":" + m + ":" + s;
+}
+
+function renderTabel() {
+    var tbody = document.getElementById("isi-tabel");
+    if (!tbody) return;
+    var html = "";
+    for (var i = 0; i < dataSensor.length; i++) {
+        var s = dataSensor[i];
+        var labelStatus = { "normal": "Normal", "tinggi": "Tinggi", "rendah": "Rendah", "kritis": "Kritis !" }[s.status] || s.status;
+        var classStatus = "status-" + s.status;
+        html += "<tr>";
+        html += "<td>" + (i + 1) + "</td>";
+        html += "<tr>" + s.id + "</td>";
+        html += "<td>" + s.lokasi + "</td>";
+        html += "<td>" + s.debit.toFixed(1) + "</td>";
+        html += "<td>" + s.tma + "</td>";
+        html += "<td>" + s.suhu.toFixed(1) + "</td>";
+        html += "<td>" + s.lembap + "</td>";
+        html += "<td><span class='" + classStatus + "'>" + labelStatus + "</span></td>";
+        html += "<td>" + waktuSekarang() + "</td>";
+        html += "</tr>";
+    }
+    tbody.innerHTML = html;
+    hitungRingkasan();
+}
+
+function hitungRingkasan() {
+    var totalDebit = 0, totalTMA = 0, jumlahNormal = 0;
+    for (var i = 0; i < dataSensor.length; i++) {
+        totalDebit += dataSensor[i].debit;
+        totalTMA += dataSensor[i].tma;
+        if (dataSensor[i].status === "normal") jumlahNormal++;
+    }
+    var n = dataSensor.length;
+    var rataDebit = document.getElementById("rata-debit");
+    var rataTMA = document.getElementById("rata-tma");
+    var sensorAman = document.getElementById("sensor-aman");
+    if (rataDebit) rataDebit.textContent = (totalDebit / n).toFixed(1);
+    if (rataTMA) rataTMA.textContent = Math.round(totalTMA / n);
+    if (sensorAman) sensorAman.textContent = jumlahNormal + " dari " + n + " titik";
+}
+
+function perbaruiSensor() {
+    for (var i = 0; i < dataSensor.length; i++) {
+        var s = dataSensor[i];
+        s.debit = Math.max(0.5, s.debit + (Math.random() - 0.5));
+        s.tma = Math.max(5, s.tma + Math.round((Math.random() - 0.5) * 3));
+        s.lembap = Math.min(100, Math.max(10, s.lembap + Math.round((Math.random() - 0.5) * 2)));
+        if (s.tma < 15) s.status = "kritis";
+        else if (s.tma < 25) s.status = "rendah";
+        else if (s.tma > 65) s.status = "tinggi";
+        else s.status = "normal";
+    }
+    renderTabel();
+}
+
+// ========== FUNGSI LAPORAN ==========
+function kirimLaporan() {
+    var nama = document.getElementById("nama-pelapor").value.trim();
+    var lokasi = document.getElementById("lokasi-kendala").value.trim();
+    var jenis = document.getElementById("jenis-kendala").value;
+    var pesanEl = document.getElementById("pesan-form");
+
+    if (!nama || !lokasi || !jenis) {
+        if (pesanEl) {
+            pesanEl.style.display = "block";
+            pesanEl.style.background = "#fdecea";
+            pesanEl.style.border = "1px solid #e74c3c";
+            pesanEl.style.color = "#c0392b";
+            pesanEl.textContent = "Mohon isi semua kolom sebelum mengirim laporan.";
+        } else {
+            alert("Mohon isi semua kolom sebelum mengirim laporan.");
+        }
+        return false;
+    }
+    return true;
+}
+
+// ========== JALANKAN SENSOR ==========
+if (document.getElementById('isi-tabel')) {
+    renderTabel();
+    setInterval(perbaruiSensor, 4000);
+}
+</script>
+
 </body>
 </html>
