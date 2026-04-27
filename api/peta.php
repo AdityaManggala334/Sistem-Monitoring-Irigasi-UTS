@@ -259,7 +259,7 @@ require_once 'auth_helper.php';
             </div>
             <div class="map-wrap">
                 <!-- Foto aerial -->
-                <img class="aerial" src="/map.png" alt="Foto Udara Jaringan Irigasi">
+                <img class="aerial" src="https://i.imgur.com/ABCDE123.png" alt="Peta Irigasi Sawah">
                 <!-- Overlay -->
                 <div class="map-overlay"></div>
 
