@@ -1,15 +1,18 @@
 <?php
 require_once 'koneksi.php';
 
-// Ambil data user dari URL parameter (karena session tidak jalan di Vercel)
-if (isset($_GET['user_id']) && isset($_GET['username'])) {
-    $user_id = $_GET['user_id'];
-    $username = $_GET['username'];
-    $nama_depan = $_GET['nama_depan'] ?? '';
-    $nama_belakang = $_GET['nama_belakang'] ?? '';
-    $role = $_GET['role'] ?? 'petani';
+// Ambil parameter dari URL path
+$path = $_SERVER['PATH_INFO'] ?? '';
+$segments = explode('/', trim($path, '/'));
+
+if (count($segments) >= 2) {
+    $user_id = $segments[0] ?? null;
+    $username = urldecode($segments[1] ?? '');
+    $nama_depan = urldecode($segments[2] ?? '');
+    $nama_belakang = urldecode($segments[3] ?? '');
+    $role = $segments[4] ?? 'petani';
     
-    $namaDepan = htmlspecialchars($nama_depan);
+    $namaDepan = htmlspecialchars($nama_depan ?: $username);
     $namaBelakang = htmlspecialchars($nama_belakang);
     $namaLengkap = trim($namaDepan . ' ' . $namaBelakang) ?: htmlspecialchars($username);
 } else {
