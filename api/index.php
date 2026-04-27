@@ -130,8 +130,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
 <div class="max-w-6xl mx-auto px-6 py-8">
 
   <!-- HERO with CSS Background Image -->
-<div class="relative rounded-3xl overflow-hidden mb-8 fade-up" style="min-height:340px; background-image: url('/hero-irigasi.png'); background-size: cover; background-position: center 30%;">
-    
+<div class="relative rounded-3xl overflow-hidden mb-8 fade-up" 
+     style="min-height:340px; 
+            background-image: url('https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=1200&h=400&fit=crop'); 
+            background-size: cover; 
+            background-position: center 30%;">
     <!-- Overlay tipis agar teks terbaca -->
     <div class="absolute inset-0" style="background: rgba(0,0,0,0.3);"></div>
 
