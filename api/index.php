@@ -227,34 +227,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
   </div>
 
   <!--  Monitoring Table  -->
-  <div id="monitoring" class="bg-white rounded-2xl border overflow-hidden mb-8" style="border-color:rgba(6,78,59,0.08);box-shadow:0 1px 3px rgba(6,78,59,0.05),0 8px 24px rgba(6,78,59,0.06);">
+<div id="monitoring" class="bg-white rounded-2xl border overflow-hidden mb-8" style="border-color:rgba(6,78,59,0.08);box-shadow:0 1px 3px rgba(6,78,59,0.05),0 8px 24px rgba(6,78,59,0.06);">
     <div class="flex items-center justify-between px-5 py-3.5 border-b bg-slate-50/70" style="border-color:rgba(6,78,59,0.06);">
-      <div>
-        <div class="font-bold text-slate-700 text-sm">Data Monitoring Sensor Real-Time</div>
-        <div class="text-xs text-slate-400 mt-0.5 flex items-center gap-1.5">
-          <span class="live-dot"></span> Diperbarui setiap 4 detik · 8 titik sensor aktif
+        <div>
+            <div class="font-bold text-slate-700 text-sm">Data Monitoring Sensor Real-Time</div>
+            <div class="text-xs text-slate-400 mt-0.5 flex items-center gap-1.5">
+                <span class="live-dot inline-block w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                Diperbarui setiap 4 detik · 8 titik sensor aktif
+            </div>
         </div>
-      </div>
-      <a href="peta.php" class="flex items-center gap-1 text-xs font-bold text-emerald-500 hover:text-emerald-700 no-underline">Lihat Peta →</a>
+        <a href="peta.php" class="flex items-center gap-1 text-xs font-bold text-emerald-500 hover:text-emerald-700 transition-colors no-underline">
+            Lihat Peta <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
     </div>
     <div class="overflow-x-auto">
-      <table class="w-full text-sm border-collapse" id="isi-tabel">
-        <thead>
-          <tr>
-            <?php foreach (['No','ID Sensor','Lokasi','Debit','TMA','Suhu','Lembap','Status','Waktu'] as $h): ?>
-            <th class="py-2.5 px-3.5 text-left text-xs font-bold uppercase text-slate-400 bg-slate-50/80 border-b" style="border-color:rgba(6,78,59,0.06);"><?= $h ?></th>
-            <?php endforeach; ?>
-          </tr>
-        </thead>
-        <tbody id="isi-tabel"></tbody>
-      </table>
+        <table class="w-full text-sm border-collapse">
+            <thead>
+                <tr>
+                    <th class="py-2.5 px-3.5 text-left text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/80 border-b" style="border-color:rgba(6,78,59,0.06);">No</th>
+                    <th class="py-2.5 px-3.5 text-left text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/80 border-b" style="border-color:rgba(6,78,59,0.06);">ID Sensor</th>
+                    <th class="py-2.5 px-3.5 text-left text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/80 border-b" style="border-color:rgba(6,78,59,0.06);">Lokasi</th>
+                    <th class="py-2.5 px-3.5 text-left text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/80 border-b" style="border-color:rgba(6,78,59,0.06);">Debit (L/dtk)</th>
+                    <th class="py-2.5 px-3.5 text-left text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/80 border-b" style="border-color:rgba(6,78,59,0.06);">TMA (cm)</th>
+                    <th class="py-2.5 px-3.5 text-left text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/80 border-b" style="border-color:rgba(6,78,59,0.06);">Suhu (°C)</th>
+                    <th class="py-2.5 px-3.5 text-left text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/80 border-b" style="border-color:rgba(6,78,59,0.06);">Lembap (%)</th>
+                    <th class="py-2.5 px-3.5 text-left text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/80 border-b" style="border-color:rgba(6,78,59,0.06);">Status</th>
+                    <th class="py-2.5 px-3.5 text-left text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/80 border-b" style="border-color:rgba(6,78,59,0.06);">Waktu</th>
+                </tr>
+            </thead>
+            <tbody id="isi-tabel">
+                <!-- Data akan diisi JavaScript -->
+            </tbody>
+        </table>
     </div>
-    <div class="grid grid-cols-3 gap-4 px-5 py-3 bg-slate-50/70 border-t">
-      <div class="text-xs text-slate-400">Rata-rata Debit<div class="text-sm font-bold text-slate-700 mt-0.5"><span id="rata-debit">—</span> L/dtk</div></div>
-      <div class="text-xs text-slate-400">Rata-rata TMA<div class="text-sm font-bold text-slate-700 mt-0.5"><span id="rata-tma">—</span> cm</div></div>
-      <div class="text-xs text-slate-400">Status Normal<div class="text-sm font-bold text-slate-700 mt-0.5"><span id="sensor-aman">—</span></div></div>
+    <!-- Summary bar -->
+    <div class="grid grid-cols-3 gap-4 px-5 py-3 bg-slate-50/70 border-t" style="border-color:rgba(6,78,59,0.06);">
+        <div class="text-xs text-slate-400">Rata-rata Debit<div class="text-sm font-bold text-slate-700 mt-0.5"><span id="rata-debit">—</span> L/dtk</div></div>
+        <div class="text-xs text-slate-400">Rata-rata TMA<div class="text-sm font-bold text-slate-700 mt-0.5"><span id="rata-tma">—</span> cm</div></div>
+        <div class="text-xs text-slate-400">Status Normal<div class="text-sm font-bold text-slate-700 mt-0.5"><span id="sensor-aman">—</span></div></div>
     </div>
-  </div>
+</div>
 
   <!--  Form Laporan  -->
   <div id="lapor" class="bg-white rounded-2xl p-6 border mb-8" style="border-color:rgba(6,78,59,0.08);box-shadow:0 1px 3px rgba(6,78,59,0.05),0 8px 24px rgba(6,78,59,0.06);">
