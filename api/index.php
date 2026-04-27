@@ -1,4 +1,5 @@
 <?php
+ob_start();
 require_once 'koneksi.php';
 require_once 'auth_helper.php';
 
@@ -28,7 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
         mysqli_stmt_close($stmt);
     }
 }
-?>
     
 <!DOCTYPE html>
 <html lang="id">
