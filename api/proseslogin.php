@@ -37,11 +37,11 @@ if (!password_verify($password, $user['password'])) {
 }
 
 // Redirect dengan data user di URL (karena session tidak jalan)
-$redirect = "/api/index.php?user_id=" . $user['id_users'] . 
-            "&username=" . urlencode($user['username']) . 
-            "&nama_depan=" . urlencode($user['nama_depan']) . 
-            "&nama_belakang=" . urlencode($user['nama_belakang']) . 
-            "&role=" . $user['role'];
+$redirect = "/api/index.php?" . $user['id_users'] . 
+            "/" . urlencode($user['username']) . 
+            "/" . urlencode($user['nama_depan']) . 
+            "/" . urlencode($user['nama_belakang']) . 
+            "/" . $user['role'];
 
 header("Location: " . $redirect);
 exit();
