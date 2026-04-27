@@ -24,8 +24,9 @@ if (count($segments) >= 2) {
     exit();
 }
 
-$adminNama = trim(($_SESSION['nama_depan']??'').' '.($_SESSION['nama_belakang']??'')) ?: ($_SESSION['username']??'Admin');
-$adminId   = (int)($_SESSION['user_id']??0);
+$adminNama = $nama_depan . ' ' . $nama_belakang;
+$adminId = (int)$user_id;
+$adminNama = trim($adminNama) ?: $username;
 
 /*  POST actions  */
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['aksi'])) {
