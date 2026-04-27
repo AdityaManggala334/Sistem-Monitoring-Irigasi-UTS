@@ -1,4 +1,7 @@
 <?php
+ob_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 /**
  * auth_helper.php
  * Sertakan file ini di setiap halaman yang membutuhkan login.
