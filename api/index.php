@@ -130,11 +130,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
 <div class="max-w-6xl mx-auto px-6 py-8">
 
   <!-- HERO with CSS Background Image -->
-<div class="relative rounded-3xl overflow-hidden mb-8 fade-up" 
-     style="min-height:340px; 
-            background-image: url('https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=1200&h=400&fit=crop'); 
-            background-size: cover; 
-            background-position: center 30%;">
+ <!--  HERO with Image  -->
+  <div class="relative rounded-3xl overflow-hidden mb-8 fade-up" style="min-height:340px;">
+    <!-- Background image -->
+    <img src="/hero-irigasi.png" alt="Irigasi Sawah"
+         class="absolute inset-0 w-full h-full object-cover object-center">
+    <!-- Gradient overlay -->
+    <div class="absolute inset-0" style="background:linear-gradient(100deg,rgba(2,44,34,0.88) 0%,rgba(6,78,59,0.65) 55%,rgba(6,78,59,0.20) 100%);"></div>
+    <!-- Grid overlay -->
+    <div class="absolute inset-0 opacity-5" style="background-image:linear-gradient(rgba(255,255,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,1) 1px,transparent 1px);background-size:48px 48px;"></div>
     <!-- Overlay tipis agar teks terbaca -->
     <div class="absolute inset-0" style="background: rgba(0,0,0,0.3);"></div>
 
