@@ -1,21 +1,8 @@
 <?php
-
-session_start();
 require_once 'koneksi.php';
+require_once 'auth_helper.php';
 
-// ── Auth (semua user yang login boleh akses)
-if (!isset($_SESSION['username'])) {
-    header("Location: login.php");
-    exit();
-}
-
-$namaUser = htmlspecialchars(trim(
-    ($_SESSION['nama_depan'] ?? '') . ' ' . ($_SESSION['nama_belakang'] ?? '')
-) ?: ($_SESSION['username'] ?? ''));
-$role = $_SESSION['role'] ?? 'petani';
-
-
-//  Ambil data dari API BPS via cURL
+// ── Ambil data dari API BPS via cURL
 
 function fetchBPS(string $url): ?array {
     if (!function_exists('curl_init')) return null;
@@ -162,6 +149,8 @@ $terluas       = $listData[0] ?? null;
 $rataProduktiv = $jumlah > 0
     ? array_sum(array_column($listData, 'produktivitas')) / $jumlah
     : 0;
+?>
+
 ?>
 <!DOCTYPE html>
 <html lang="id">
