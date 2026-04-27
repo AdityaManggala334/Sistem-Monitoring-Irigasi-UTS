@@ -199,60 +199,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
     </div>
 
     <div class="bg-white rounded-2xl p-6 border" style="border-color:rgba(6,78,59,0.08);box-shadow:0 1px 3px rgba(6,78,59,0.05),0 8px 24px rgba(6,78,59,0.06);">
-      <h2 class="text-base font-bold text-emerald-900 mb-3 pb-2 inline-block border-b-2 border-emerald-500">Informasi Sistem</h2>
-      <table class="w-full text-sm border-collapse">
-        <thead><tr class="text-left">
-          <th class="py-2 px-3 text-xs font-bold uppercase tracking-wide text-white rounded-l-xl" style="background:#064E3B;">#</th>
-          <th class="py-2 px-3 text-xs font-bold uppercase tracking-wide text-white" style="background:#064E3B;">Keterangan</th>
-          <th class="py-2 px-3 text-xs font-bold uppercase tracking-wide text-white rounded-r-xl" style="background:#064E3B;">Detail</th>
-        </table></thead>
-        <tbody>
-          <?php foreach ([
-            ['1','Nama Sistem','SM Irigasi'],
-            ['2','Titik Sensor','8 Titik Aktif'],
-            ['3','Jenis Sensor','Ultrasonik, DHT22, Flow Meter'],
-            ['4','Komunikasi','LoRa / GSM / WiFi'],
-            ['5','Update Interval','Setiap 4 detik'],
-            ['6','Area Sawah','±240 Hektar'],
-          ] as [$no, $k, $v]): ?>
-          <tr class="hover:bg-emerald-50/40 transition-colors">
-            <td class="py-2.5 px-3 text-slate-400 text-xs border-b" style="border-color:rgba(6,78,59,0.06);"><?= $no ?></td>
-            <td class="py-2.5 px-3 text-slate-600 border-b" style="border-color:rgba(6,78,59,0.06);"><?= $k ?></td>
-            <td class="py-2.5 px-3 text-slate-700 font-medium border-b" style="border-color:rgba(6,78,59,0.06);"><?= $v ?></td>
-          </tr>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
+    <h2 class="text-base font-bold text-emerald-900 mb-4 pb-2 inline-block border-b-2 border-emerald-500">Informasi Sistem</h2>
+    <div class="space-y-3">
+        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+            <span class="text-sm text-slate-500 w-24">Nama Sistem</span>
+            <span class="text-sm font-semibold text-slate-700 flex-1">SM Irigasi</span>
+        </div>
+        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+            <span class="text-sm text-slate-500 w-24">Titik Sensor</span>
+            <span class="text-sm font-semibold text-slate-700 flex-1">8 Titik Aktif</span>
+        </div>
+        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+            <span class="text-sm text-slate-500 w-24">Jenis Sensor</span>
+            <span class="text-sm font-semibold text-slate-700 flex-1">Ultrasonik, DHT22, Flow Meter</span>
+        </div>
+        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+            <span class="text-sm text-slate-500 w-24">Komunikasi</span>
+            <span class="text-sm font-semibold text-slate-700 flex-1">LoRa / GSM / WiFi</span>
+        </div>
+        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+            <span class="text-sm text-slate-500 w-24">Update Interval</span>
+            <span class="text-sm font-semibold text-slate-700 flex-1">Setiap 4 detik</span>
+        </div>
+        <div class="flex justify-between items-center py-2">
+            <span class="text-sm text-slate-500 w-24">Area Sawah</span>
+            <span class="text-sm font-semibold text-slate-700 flex-1">±240 Hektar</span>
+        </div>
     </div>
-  </div>
+</div>
 
-  <!--  Monitoring Table  -->
+<!--  Monitoring Table  -->
 <div id="monitoring" class="bg-white rounded-2xl border overflow-hidden mb-8" style="border-color:rgba(6,78,59,0.08);box-shadow:0 1px 3px rgba(6,78,59,0.05),0 8px 24px rgba(6,78,59,0.06);">
     <div class="flex items-center justify-between px-5 py-3.5 border-b bg-slate-50/70" style="border-color:rgba(6,78,59,0.06);">
         <div>
             <div class="font-bold text-slate-700 text-sm">Data Monitoring Sensor Real-Time</div>
             <div class="text-xs text-slate-400 mt-0.5 flex items-center gap-1.5">
-                <span class="live-dot inline-block w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                <span class="live-dot"></span>
                 Diperbarui setiap 4 detik · 8 titik sensor aktif
             </div>
         </div>
         <a href="peta.php" class="flex items-center gap-1 text-xs font-bold text-emerald-500 hover:text-emerald-700 transition-colors no-underline">
-            Lihat Peta <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            Lihat Peta →
         </a>
     </div>
     <div class="overflow-x-auto">
         <table class="w-full text-sm border-collapse">
             <thead>
                 <tr>
-                    <th class="py-2.5 px-3.5 text-left text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/80 border-b" style="border-color:rgba(6,78,59,0.06);">No</th>
-                    <th class="py-2.5 px-3.5 text-left text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/80 border-b" style="border-color:rgba(6,78,59,0.06);">ID Sensor</th>
-                    <th class="py-2.5 px-3.5 text-left text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/80 border-b" style="border-color:rgba(6,78,59,0.06);">Lokasi</th>
-                    <th class="py-2.5 px-3.5 text-left text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/80 border-b" style="border-color:rgba(6,78,59,0.06);">Debit (L/dtk)</th>
-                    <th class="py-2.5 px-3.5 text-left text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/80 border-b" style="border-color:rgba(6,78,59,0.06);">TMA (cm)</th>
-                    <th class="py-2.5 px-3.5 text-left text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/80 border-b" style="border-color:rgba(6,78,59,0.06);">Suhu (°C)</th>
-                    <th class="py-2.5 px-3.5 text-left text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/80 border-b" style="border-color:rgba(6,78,59,0.06);">Lembap (%)</th>
-                    <th class="py-2.5 px-3.5 text-left text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/80 border-b" style="border-color:rgba(6,78,59,0.06);">Status</th>
-                    <th class="py-2.5 px-3.5 text-left text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/80 border-b" style="border-color:rgba(6,78,59,0.06);">Waktu</th>
+                    <th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b">No</th>
+                    <th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b">ID Sensor</th>
+                    <th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b">Lokasi</th>
+                    <th class="py-3 px-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b">Debit</th>
+                    <th class="py-3 px-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b">TMA</th>
+                    <th class="py-3 px-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b">Suhu</th>
+                    <th class="py-3 px-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b">Lembap</th>
+                    <th class="py-3 px-4 text-center text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b">Status</th>
+                    <th class="py-3 px-4 text-center text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-b">Waktu</th>
                 </tr>
             </thead>
             <tbody id="isi-tabel">
@@ -260,6 +262,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
             </tbody>
         </table>
     </div>
+    <div class="grid grid-cols-3 gap-4 px-5 py-3 bg-slate-50/70 border-t">
+        <div class="text-xs text-slate-500">Rata-rata Debit<div class="text-lg font-bold text-slate-800 mt-1"><span id="rata-debit">—</span> <span class="text-xs font-normal text-slate-400">L/dtk</span></div></div>
+        <div class="text-xs text-slate-500">Rata-rata TMA<div class="text-lg font-bold text-slate-800 mt-1"><span id="rata-tma">—</span> <span class="text-xs font-normal text-slate-400">cm</span></div></div>
+        <div class="text-xs text-slate-500">Sensor Normal<div class="text-lg font-bold text-slate-800 mt-1"><span id="sensor-aman">—</span></div></div>
+    </div>
+</div>
     <!-- Summary bar -->
     <div class="grid grid-cols-3 gap-4 px-5 py-3 bg-slate-50/70 border-t" style="border-color:rgba(6,78,59,0.06);">
         <div class="text-xs text-slate-400">Rata-rata Debit<div class="text-sm font-bold text-slate-700 mt-0.5"><span id="rata-debit">—</span> L/dtk</div></div>
