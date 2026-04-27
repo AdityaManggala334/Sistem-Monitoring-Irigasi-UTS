@@ -36,8 +36,7 @@ if (!password_verify($password, $user['password'])) {
     die("PASSWORD SALAH!<br>Input: " . htmlspecialchars($password) . "<br>Hash DB: " . $user['password']);
 }
 
-// Redirect dengan data user di URL (karena session tidak jalan)
-$redirect = "/api/index.php?" . $user['id_users'] . 
+$redirect = "/api/index.php/" . $user['id_users'] . 
             "/" . urlencode($user['username']) . 
             "/" . urlencode($user['nama_depan']) . 
             "/" . urlencode($user['nama_belakang']) . 
