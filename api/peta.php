@@ -322,7 +322,7 @@ require_once 'auth_helper.php';
         <!-- Map Card -->
         <div class="panel">
             <div class="panel-head">
-                <span>🗺️ Denah Jaringan Irigasi</span>
+                <span> Denah Jaringan Irigasi</span>
                 <span class="panel-sub" id="waktu-peta">--:--:--</span>
             </div>
             <div class="map-wrap">
