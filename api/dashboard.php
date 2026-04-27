@@ -1,57 +1,100 @@
 <?php
+// Memuat file koneksi database dan helper autentikasi
 require_once 'koneksi.php';
 require_once 'auth_helper.php';
 
-// Cek role administrator
+// Cek apakah user yang login adalah administrator, jika bukan redirect ke index.php
 if ($role !== 'administrator') {
     header("Location: index.php");
     exit();
 }
 
+// Ambil nama lengkap admin dan ID user dari session
 $adminNama = $namaLengkap;
 $adminId   = (int)$user_id;
 
-/*  POST actions  */
+/* PROSES POST (Aksi dari form di halaman admin) */
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['aksi'])) {
+    
+    // Aksi 1: Ubah role pengguna
     if ($_POST['aksi']==='ubah_role') {
-        $id_t=$_POST['id_user']??0; $r=$_POST['role']??'';
-        $ok=['petani','petugas_lapangan','koordinator_irigasi','administrator'];
+        $id_t=$_POST['id_user']??0;       // Ambil ID user dari form
+        $r=$_POST['role']??'';             // Ambil role baru
+        $ok=['petani','petugas_lapangan','koordinator_irigasi','administrator']; // Role yang diizinkan
         if ($id_t>0 && in_array($r,$ok)) {
             $st=mysqli_prepare($conn,"UPDATE users SET role=? WHERE id_users=?");
             mysqli_stmt_bind_param($st,'si',$r,$id_t);
-            mysqli_stmt_execute($st); mysqli_stmt_close($st);
+            mysqli_stmt_execute($st);
+            mysqli_stmt_close($st);
         }
-        header("Location: dashboard.php?msg=role_ok"); exit();
+        header("Location: dashboard.php?msg=role_ok");
+        exit();
     }
+    
+    // Aksi 2: Hapus user
     if ($_POST['aksi']==='hapus_user') {
         $id_t=(int)($_POST['id_user']??0);
-        if ($id_t===$adminId){header("Location: dashboard.php?msg=self_err");exit();}
-        if ($id_t>0){$st=mysqli_prepare($conn,"DELETE FROM users WHERE id_users=?");mysqli_stmt_bind_param($st,'i',$id_t);mysqli_stmt_execute($st);mysqli_stmt_close($st);}
-        header("Location: dashboard.php?msg=del_ok"); exit();
+        if ($id_t===$adminId){  // Cegah admin menghapus akun sendiri
+            header("Location: dashboard.php?msg=self_err");
+            exit();
+        }
+        if ($id_t>0){
+            $st=mysqli_prepare($conn,"DELETE FROM users WHERE id_users=?");
+            mysqli_stmt_bind_param($st,'i',$id_t);
+            mysqli_stmt_execute($st);
+            mysqli_stmt_close($st);
+        }
+        header("Location: dashboard.php?msg=del_ok");
+        exit();
     }
+    
+    // Aksi 3: Ubah status laporan
     if ($_POST['aksi']==='ubah_status_laporan') {
-        $id_l=(int)($_POST['id_laporan']??0); $s=$_POST['status']??'';
+        $id_l=(int)($_POST['id_laporan']??0);
+        $s=$_POST['status']??'';
         if ($id_l>0 && in_array($s,['baru','ditangani','selesai'])){
             $st=mysqli_prepare($conn,"UPDATE laporan_kendala SET status=? WHERE id_laporan=?");
-            mysqli_stmt_bind_param($st,'si',$s,$id_l); mysqli_stmt_execute($st); mysqli_stmt_close($st);
+            mysqli_stmt_bind_param($st,'si',$s,$id_l);
+            mysqli_stmt_execute($st);
+            mysqli_stmt_close($st);
         }
-        header("Location: dashboard.php?msg=status_ok#laporan"); exit();
+        header("Location: dashboard.php?msg=status_ok#laporan");
+        exit();
     }
 }
 
-/*  Data queries  */
-$users    = mysqli_query($conn,"SELECT * FROM users ORDER BY created_at DESC");
-$laporan  = mysqli_query($conn,"SELECT lk.*,u.username FROM laporan_kendala lk LEFT JOIN users u ON lk.id_users=u.id_users ORDER BY lk.created_at DESC");
-$totalU   = (int)mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) c FROM users"))['c'];
-$totalL   = (int)mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) c FROM laporan_kendala"))['c'];
-$newL     = (int)mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) c FROM laporan_kendala WHERE status='baru'"))['c'];
-$admCnt   = (int)mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) c FROM users WHERE role='administrator'"))['c'];
-$roleList = ['petani','petugas_lapangan','koordinator_irigasi','administrator'];
+/* AMBIL DATA DARI DATABASE */
+$users    = mysqli_query($conn,"SELECT * FROM users ORDER BY created_at DESC");                // Semua pengguna
+$laporan  = mysqli_query($conn,"SELECT lk.*,u.username FROM laporan_kendala lk LEFT JOIN users u ON lk.id_users=u.id_users ORDER BY lk.created_at DESC"); // Semua laporan
+$totalU   = (int)mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) c FROM users"))['c']; // Total pengguna
+$totalL   = (int)mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) c FROM laporan_kendala"))['c']; // Total laporan
+$newL     = (int)mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) c FROM laporan_kendala WHERE status='baru'"))['c']; // Laporan dengan status baru
+$admCnt   = (int)mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) c FROM users WHERE role='administrator'"))['c']; // Jumlah administrator
+$roleList = ['petani','petugas_lapangan','koordinator_irigasi','administrator']; // Daftar role yang valid
 
-function lRole(string $r):string{ return match($r){'petani'=>'Petani','petugas_lapangan'=>'Petugas Lapangan','koordinator_irigasi'=>'Koordinator Irigasi','administrator'=>'Administrator',default=>$r}; }
-function bRole(string $r):string{ return match($r){'petani'=>'badge-petani','petugas_lapangan'=>'badge-petugas','koordinator_irigasi'=>'badge-koordinator','administrator'=>'badge-admin',default=>''}; }
+// Fungsi untuk mengubah kode role menjadi teks yang mudah dibaca
+function lRole(string $r):string{
+    return match($r){
+        'petani'=>'Petani',
+        'petugas_lapangan'=>'Petugas Lapangan',
+        'koordinator_irigasi'=>'Koordinator Irigasi',
+        'administrator'=>'Administrator',
+        default=>$r
+    };
+}
 
-/* Sensor data (hardcoded - replace with DB in production) */
+// Fungsi untuk mendapatkan class CSS berdasarkan role
+function bRole(string $r):string{
+    return match($r){
+        'petani'=>'badge-petani',
+        'petugas_lapangan'=>'badge-petugas',
+        'koordinator_irigasi'=>'badge-koordinator',
+        'administrator'=>'badge-admin',
+        default=>''
+    };
+}
+
+/* DATA SENSOR (Masih hardcoded, bisa diganti dengan database nanti) */
 $sensors=[
     ['id'=>'SNS-01','lokasi'=>'Saluran Induk Ngidul','debit'=>12.4,'tma'=>42,'suhu'=>26.8,'lembap'=>68,'status'=>'normal'],
     ['id'=>'SNS-02','lokasi'=>'Percabangan Blok A','debit'=>8.7,'tma'=>35,'suhu'=>27.1,'lembap'=>72,'status'=>'normal'],
@@ -62,10 +105,12 @@ $sensors=[
     ['id'=>'SNS-07','lokasi'=>'Saluran Petak 12','debit'=>9.3,'tma'=>38,'suhu'=>26.5,'lembap'=>70,'status'=>'normal'],
     ['id'=>'SNS-08','lokasi'=>'Embung Ngulon','debit'=>7.8,'tma'=>32,'suhu'=>27.4,'lembap'=>66,'status'=>'normal'],
 ];
-$avgDebit=round(array_sum(array_column($sensors,'debit'))/count($sensors),1);
-$avgTMA  =round(array_sum(array_column($sensors,'tma'))/count($sensors));
-$normalCnt=count(array_filter($sensors,fn($s)=>$s['status']==='normal'));
-$kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
+
+// Hitung statistik untuk KPI cards
+$avgDebit=round(array_sum(array_column($sensors,'debit'))/count($sensors),1);   // Rata-rata debit
+$avgTMA  =round(array_sum(array_column($sensors,'tma'))/count($sensors));        // Rata-rata TMA
+$normalCnt=count(array_filter($sensors,fn($s)=>$s['status']==='normal'));        // Jumlah sensor normal
+$kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));        // Jumlah sensor kritis
 ?>
 
 <!DOCTYPE html>
@@ -78,6 +123,7 @@ $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* RESET DAN VARIABEL GLOBAL */
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
         :root{
             --bg:#F0FDF4;
@@ -97,7 +143,7 @@ $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
         }
         body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--txt);display:flex;flex-direction:column;min-height:100vh;}
 
-        /* Mobile: sidebar jadi menu toggle */
+        /* SIDEBAR (MOBILE: toggle, DESKTOP: tetap terbuka) */
         .sidebar{
             position:fixed;top:0;left:-280px;width:280px;height:100%;z-index:1000;
             background:var(--sidebar);transition:left 0.3s ease;overflow-y:auto;
@@ -110,7 +156,7 @@ $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
         }
         .sidebar-overlay.open{display:block;}
         
-        /* Desktop: sidebar tetap terbuka */
+        /* DESKTOP: sidebar tetap terbuka */
         @media (min-width: 768px) {
             body{flex-direction:row;}
             .sidebar{position:sticky;left:0;width:240px;height:100vh;top:0;}
@@ -118,6 +164,7 @@ $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
             .menu-toggle{display:none !important;}
         }
         
+        /* MOBILE: penyesuaian layout */
         @media (max-width: 767px) {
             .main{width:100%;}
             .topbar{padding-left:1rem !important;padding-right:1rem !important;}
@@ -138,6 +185,7 @@ $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
             .sb-footer{margin-bottom:20px;}
         }
         
+        /* HANDPHONE (max 480px) */
         @media (max-width: 480px) {
             .kpi-grid{grid-template-columns:1fr !important;}
             .bento-grid{grid-template-columns:1fr !important;}
@@ -146,7 +194,7 @@ $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
             .logout-btn{padding:6px 10px !important;font-size:0.7rem !important;}
         }
         
-        /* Sidebar styles */
+        /* SIDEBAR STYLE (logo, menu, footer) */
         .sb-logo{padding:1.5rem 1.25rem;border-bottom:1px solid rgba(255,255,255,0.08);}
         .sb-logo-inner{display:flex;align-items:center;gap:10px;}
         .sb-logo-txt{font-size:1.1rem;font-weight:800;color:white;letter-spacing:-0.02em;line-height:1.1;}
@@ -171,7 +219,7 @@ $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
         .sb-uname{font-size:0.82rem;font-weight:600;color:rgba(255,255,255,0.85);line-height:1.2;}
         .sb-urole{font-size:0.65rem;color:rgba(255,255,255,0.35);font-weight:500;text-transform:capitalize;}
 
-        /* MAIN CONTENT */
+        /* KONTEN UTAMA */
         .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
 
         /* TOP BAR */
@@ -203,16 +251,16 @@ $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
         .logout-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:10px;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.15);color:#DC2626;font-size:0.75rem;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;transition:all 0.18s;}
         @media (min-width: 640px){.logout-btn{padding:8px 14px;gap:6px;font-size:0.82rem;}}
 
-        /* CONTENT AREA */
+        /* KONTEN AREA */
         .content{padding:1rem;flex:1;overflow-y:auto;}
         @media (min-width: 640px){.content{padding:1.75rem;}}
 
-        /* FLASH MSG */
+        /* FLASH MESSAGE (Notifikasi sukses/error) */
         .flash{padding:10px 14px;border-radius:12px;font-size:0.8rem;font-weight:500;margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
         .flash-ok{background:#F0FDF4;border:1px solid #BBF7D0;color:#166534;}
         .flash-err{background:#FEF2F2;border:1px solid #FECACA;color:#991B1B;}
 
-        /* KPI GRID */
+        /* KPI GRID (Card statistik) */
         .kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0.75rem;margin-bottom:1rem;}
         @media (min-width: 640px){.kpi-grid{gap:1rem;margin-bottom:1.5rem;}}
         @media (min-width: 1024px){.kpi-grid{grid-template-columns:repeat(4,1fr);}}
@@ -225,7 +273,7 @@ $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
         .kpi-label{font-size:0.7rem;font-weight:600;color:var(--txt2);margin-top:2px;}
         .kpi-sub{font-size:0.65rem;color:var(--muted);}
 
-        /* BENTO SENSOR GRID */
+        /* BENTO SENSOR GRID (Card sensor) */
         .bento-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0.75rem;margin-bottom:1rem;}
         @media (min-width: 640px){.bento-grid{gap:1rem;margin-bottom:1.5rem;}}
         @media (min-width: 1024px){.bento-grid{grid-template-columns:repeat(4,1fr);}}
@@ -233,6 +281,7 @@ $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
         .sensor-tile{background:var(--card);border-radius:14px;padding:0.8rem;border:1px solid var(--border);box-shadow:var(--shadow);position:relative;overflow:hidden;transition:transform 0.2s;}
         @media (min-width: 640px){.sensor-tile{padding:1.1rem;border-radius:16px;}}
         .sensor-tile:hover{transform:translateY(-2px);}
+        /* Garis warna di atas card sesuai status sensor */
         .sensor-tile::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0;}
         @media (min-width: 640px){.sensor-tile::before{border-radius:16px 16px 0 0;}}
         .tile-normal::before{background:linear-gradient(90deg,#10B981,#34D399);}
@@ -247,12 +296,14 @@ $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
         .tile-stat-val{font-size:0.8rem;font-weight:700;color:var(--txt);}
         .tile-stat-lbl{font-size:0.6rem;color:var(--muted);font-weight:500;margin-top:1px;}
         .status-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:0.65rem;font-weight:700;margin-top:6px;}
+        
+        /* Badge status */
         .sp-normal{background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0;}
         .sp-rendah{background:#FFF7ED;color:#C2410C;border:1px solid #FED7AA;}
         .sp-tinggi{background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;}
         .sp-kritis{background:#FEF2F2;color:#B91C1C;border:1px solid #FCA5A5;}
 
-        /* SECTION CARDS */
+        /* SECTION CARDS (Untuk tabel manajemen) */
         .section-card{background:var(--card);border-radius:16px;border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:1rem;overflow:hidden;}
         .sc-head{padding:0.9rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
         @media (min-width: 640px){.sc-head{padding:1.1rem 1.4rem;}}
@@ -262,11 +313,12 @@ $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
         .badge-red{background:#FEF2F2;color:#B91C1C;border:1px solid #FECACA;}
         .badge-green{background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0;}
 
-        /* TABLE MOBILE FRIENDLY */
+        /* TABEL MOBILE FRIENDLY */
         .data-table{width:100%;border-collapse:collapse;font-size:0.8rem;}
         .data-table th{padding:10px 12px;text-align:left;font-size:0.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;background:#FAFAFA;border-bottom:1px solid var(--border);}
         .data-table td{padding:10px 12px;border-bottom:1px solid rgba(6,78,59,0.05);vertical-align:middle;}
         
+        /* Mobile: tabel berubah menjadi card */
         @media (max-width: 767px){
             .data-table,.data-table thead,.data-table tbody,.data-table tr,.data-table th,.data-table td{display:block;}
             .data-table thead{display:none;}
@@ -276,38 +328,44 @@ $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
             .data-table td div{text-align:right;flex:1;}
         }
         
+        /* Badge role */
         .role-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:0.68rem;font-weight:700;}
         .badge-petani{background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0;}
         .badge-petugas{background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;}
         .badge-koordinator{background:#FFF7ED;color:#C2410C;border:1px solid #FED7AA;}
         .badge-admin{background:#FDF4FF;color:#7E22CE;border:1px solid #E9D5FF;}
         
+        /* Badge status laporan */
         .ls-baru{background:#FEF2F2;color:#B91C1C;border:1px solid #FECACA;}
         .ls-ditangani{background:#FFFBEB;color:#92400E;border:1px solid #FDE68A;}
         .ls-selesai{background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0;}
         
+        /* Form control di tabel */
         .tbl-select{font-family:inherit;font-size:0.7rem;border:1px solid var(--border);border-radius:8px;padding:4px 8px;background:white;color:var(--txt);outline:none;}
         .tbl-btn{padding:4px 10px;border-radius:8px;border:none;font-family:inherit;font-size:0.7rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;}
         .tbl-btn-green{background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0;}
         .tbl-btn-red{background:#FEF2F2;color:#B91C1C;border:1px solid #FECACA;}
         .tbl-btn-blue{background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;}
         
+        /* Avatar dan badge "ANDA" */
         .avatar{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--emerald),#10B981);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:white;}
         .you-tag{background:#F1F5F9;color:#64748B;font-size:0.6rem;font-weight:700;padding:2px 6px;border-radius:20px;margin-left:6px;}
         
+        /* Animasi live dot */
         @keyframes livePulse{0%,100%{opacity:1}50%{opacity:0.4}}
         .live-dot{display:inline-block;width:7px;height:7px;background:#10B981;border-radius:50%;animation:livePulse 2s infinite;margin-right:6px;}
         
+        /* FOOTER */
         footer{background:white;border-top:1px solid var(--border);padding:0.75rem;text-align:center;font-size:0.65rem;color:var(--muted);}
         @media (min-width: 640px){footer{padding:1rem 1.75rem;font-size:0.75rem;}}
     </style>
 </head>
 <body>
 
-<!-- SIDEBAR OVERLAY MOBILE -->
+<!-- SIDEBAR OVERLAY (untuk mobile, menutup sidebar saat diklik) -->
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 
-<!-- SIDEBAR -->
+<!-- SIDEBAR MENU -->
 <aside class="sidebar" id="sidebar">
     <div class="sb-logo">
         <div class="sb-logo-inner">
@@ -374,10 +432,10 @@ $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
     </div>
 </aside>
 
-<!-- MAIN -->
+<!-- MAIN CONTENT -->
 <div class="main">
 
-    <!-- TOP BAR -->
+    <!-- TOP BAR (Header dengan judul dan tombol notifikasi) -->
     <header class="topbar">
         <div style="display:flex;align-items:center;gap:8px;">
             <button class="menu-toggle" onclick="toggleSidebar()" id="menuToggle">
@@ -402,18 +460,22 @@ $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
         </div>
     </header>
 
-    <!-- CONTENT -->
+    <!-- CONTENT AREA -->
     <div class="content">
 
         <?php
+        // Pesan notifikasi setelah melakukan aksi (ubah role, hapus user, update laporan)
         $msgs=['role_ok'=>['ok','Role pengguna berhasil diperbarui.'],'del_ok'=>['ok','Pengguna berhasil dihapus.'],'status_ok'=>['ok','Status laporan berhasil diperbarui.'],'self_err'=>['err','Tidak dapat menghapus akun sendiri.']];
-        if(isset($_GET['msg']) && isset($msgs[$_GET['msg']])){[$type,$text]=$msgs[$_GET['msg']];
-        echo '<div class="flash '.($type==='ok'?'flash-ok':'flash-err').'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'.($type==='ok'?'<polyline points="20 6 9 17 4 12"/>':'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>').'</svg>'.htmlspecialchars($text).'</div>';}
+        if(isset($_GET['msg']) && isset($msgs[$_GET['msg']])){
+            [$type,$text]=$msgs[$_GET['msg']];
+            echo '<div class="flash '.($type==='ok'?'flash-ok':'flash-err').'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'.($type==='ok'?'<polyline points="20 6 9 17 4 12"/>':'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>').'</svg>'.htmlspecialchars($text).'</div>';
+        }
         ?>
 
-        <!-- SECTION: OVERVIEW -->
+        <!-- SECTION 1: OVERVIEW (Ringkasan data dan grid sensor) -->
         <div id="sec-overview" class="sec-active" style="display:block">
 
+            <!-- KPI Cards (4 kartu statistik) -->
             <div class="kpi-grid">
                 <div class="kpi-card">
                     <div class="kpi-icon" style="background:#F0FDF4;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#15803D" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
@@ -433,11 +495,13 @@ $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
                 </div>
             </div>
 
+            <!-- Header Grid Sensor dengan link ke peta -->
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;flex-wrap:wrap;gap:8px;">
                 <div><h2 style="font-size:0.85rem;font-weight:700;color:var(--txt);">Status Sensor Real-Time</h2><p style="font-size:0.7rem;color:var(--muted);margin-top:2px;">8 titik pantau aktif · update 4 detik</p></div>
                 <a href="peta.php" style="display:flex;align-items:center;gap:5px;font-size:0.7rem;font-weight:600;color:var(--mint);text-decoration:none;">Lihat Peta<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></a>
             </div>
 
+            <!-- Bento Grid Sensor (8 card sensor) -->
             <div class="bento-grid">
                 <?php foreach($sensors as $s):
                     $spClass = 'sp-'.$s['status'];
@@ -460,7 +524,7 @@ $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
             </div>
         </div>
 
-        <!-- SECTION: USERS -->
+        <!-- SECTION 2: USERS (Manajemen Pengguna) -->
         <div id="sec-users" style="display:none">
             <div class="section-card">
                 <div class="sc-head">
@@ -469,25 +533,52 @@ $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
                 </div>
                 <div style="overflow-x:auto;">
                     <table class="data-table">
-                        <thead><tr><th>Pengguna</th><th>Username</th><th>Email</th><th>Role</th><th>Terdaftar</th><th>Aksi</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>Pengguna</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Terdaftar</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
                         <tbody>
                         <?php mysqli_data_seek($users,0); while($u=mysqli_fetch_assoc($users)): ?>
                         <tr>
-                            <td data-label="Pengguna"><div style="display:flex;align-items:center;gap:10px;"><div class="avatar"><?= strtoupper(substr($u['nama_depan'],0,1)) ?></div><div><div style="font-weight:600;font-size:0.8rem;"><?= htmlspecialchars(trim($u['nama_depan'].' '.$u['nama_belakang'])) ?><?php if((int)$u['id_users']===$adminId): ?><span class="you-tag">ANDA</span><?php endif; ?></div></div></div></td>
+                            <td data-label="Pengguna">
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div class="avatar"><?= strtoupper(substr($u['nama_depan'],0,1)) ?></div>
+                                    <div>
+                                        <div style="font-weight:600;font-size:0.8rem;">
+                                            <?= htmlspecialchars(trim($u['nama_depan'].' '.$u['nama_belakang'])) ?>
+                                            <?php if((int)$u['id_users']===$adminId): ?><span class="you-tag">ANDA</span><?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
                             <td data-label="Username"><?= htmlspecialchars($u['username']) ?></td>
                             <td data-label="Email"><?= htmlspecialchars($u['email']) ?></td>
                             <td data-label="Role"><span class="role-badge <?= bRole($u['role']) ?>"><?= lRole($u['role']) ?></span></td>
                             <td data-label="Terdaftar"><?= date('d M Y',strtotime($u['created_at'])) ?></td>
                             <td data-label="Aksi">
                                 <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                                    <!-- Form ubah role -->
                                     <form method="POST" style="display:flex;align-items:center;gap:5px;">
-                                        <input type="hidden" name="aksi" value="ubah_role"><input type="hidden" name="id_user" value="<?= $u['id_users'] ?>">
-                                        <select name="role" class="tbl-select"><?php foreach($roleList as $rl): ?><option value="<?= $rl ?>" <?= $u['role']===$rl?'selected':'' ?>><?= lRole($rl) ?></option><?php endforeach; ?></select>
+                                        <input type="hidden" name="aksi" value="ubah_role">
+                                        <input type="hidden" name="id_user" value="<?= $u['id_users'] ?>">
+                                        <select name="role" class="tbl-select">
+                                            <?php foreach($roleList as $rl): ?>
+                                            <option value="<?= $rl ?>" <?= $u['role']===$rl?'selected':'' ?>><?= lRole($rl) ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
                                         <button type="submit" class="tbl-btn tbl-btn-green"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Simpan</button>
                                     </form>
+                                    <!-- Form hapus user (tidak untuk akun sendiri) -->
                                     <?php if((int)$u['id_users']!==$adminId): ?>
                                     <form method="POST" onsubmit="return confirm('Hapus pengguna <?= htmlspecialchars($u['username'],ENT_QUOTES) ?>?')">
-                                        <input type="hidden" name="aksi" value="hapus_user"><input type="hidden" name="id_user" value="<?= $u['id_users'] ?>">
+                                        <input type="hidden" name="aksi" value="hapus_user">
+                                        <input type="hidden" name="id_user" value="<?= $u['id_users'] ?>">
                                         <button type="submit" class="tbl-btn tbl-btn-red"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>Hapus</button>
                                     </form>
                                     <?php endif; ?>
@@ -501,7 +592,7 @@ $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
             </div>
         </div>
 
-        <!-- SECTION: LAPORAN -->
+        <!-- SECTION 3: LAPORAN (Manajemen Laporan Kendala) -->
         <div id="sec-laporan" style="display:none">
             <div class="section-card">
                 <div class="sc-head">
@@ -510,11 +601,17 @@ $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
                 </div>
 
                 <?php if(mysqli_num_rows($laporan)===0): ?>
-                <div style="padding:2rem;text-align:center;color:var(--muted);"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 10px;opacity:0.3;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p style="font-weight:600;margin-bottom:4px;">Belum ada laporan</p><p style="font-size:0.7rem;">Laporan dari petani akan muncul di sini</p></div>
+                <div style="padding:2rem;text-align:center;color:var(--muted);">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 10px;opacity:0.3;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <p style="font-weight:600;margin-bottom:4px;">Belum ada laporan</p>
+                    <p style="font-size:0.7rem;">Laporan dari petani akan muncul di sini</p>
+                </div>
                 <?php else: ?>
                 <div style="overflow-x:auto;">
                     <table class="data-table">
-                        <thead><tr><th>Pelapor</th><th>Lokasi</th><th>Kendala</th><th>Tanggal</th><th>Status</th><th>Aksi</th></tr></thead>
+                        <thead>
+                            <tr><th>Pelapor</th><th>Lokasi</th><th>Kendala</th><th>Tanggal</th><th>Status</th><th>Aksi</th></tr>
+                        </thead>
                         <tbody>
                         <?php while($lp=mysqli_fetch_assoc($laporan)):
                             $lsClass='ls-'.$lp['status'];
@@ -522,15 +619,23 @@ $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
                             $lsDot=['baru'=>'#EF4444','ditangani'=>'#F59E0B','selesai'=>'#10B981'][$lp['status']];
                         ?>
                         <tr>
-                            <td data-label="Pelapor"><div style="font-weight:600;font-size:0.8rem;"><?= htmlspecialchars($lp['nama_pelapor']) ?></div><?php if($lp['username']): ?><div style="font-size:0.65rem;color:var(--muted);">@<?= htmlspecialchars($lp['username']) ?></div><?php endif; ?></td>
+                            <td data-label="Pelapor">
+                                <div style="font-weight:600;font-size:0.8rem;"><?= htmlspecialchars($lp['nama_pelapor']) ?></div>
+                                <?php if($lp['username']): ?><div style="font-size:0.65rem;color:var(--muted);">@<?= htmlspecialchars($lp['username']) ?></div><?php endif; ?>
+                            </td>
                             <td data-label="Lokasi"><?= htmlspecialchars($lp['lokasi']) ?></td>
                             <td data-label="Kendala"><?= htmlspecialchars($lp['jenis_kendala']) ?></td>
                             <td data-label="Tanggal"><?= date('d M Y H:i',strtotime($lp['created_at'])) ?></td>
                             <td data-label="Status"><span class="status-pill <?= $lsClass ?>" style="margin:0;"><svg width="5" height="5" viewBox="0 0 6 6"><circle cx="3" cy="3" r="3" fill="<?= $lsDot ?>"/></svg><?= $lsLabel ?></span></td>
                             <td data-label="Aksi">
                                 <form method="POST" style="display:flex;align-items:center;gap:5px;">
-                                    <input type="hidden" name="aksi" value="ubah_status_laporan"><input type="hidden" name="id_laporan" value="<?= $lp['id_laporan'] ?>">
-                                    <select name="status" class="tbl-select"><option value="baru" <?= $lp['status']==='baru'?'selected':'' ?>>Baru</option><option value="ditangani" <?= $lp['status']==='ditangani'?'selected':'' ?>>Ditangani</option><option value="selesai" <?= $lp['status']==='selesai'?'selected':'' ?>>Selesai</option></select>
+                                    <input type="hidden" name="aksi" value="ubah_status_laporan">
+                                    <input type="hidden" name="id_laporan" value="<?= $lp['id_laporan'] ?>">
+                                    <select name="status" class="tbl-select">
+                                        <option value="baru" <?= $lp['status']==='baru'?'selected':'' ?>>Baru</option>
+                                        <option value="ditangani" <?= $lp['status']==='ditangani'?'selected':'' ?>>Ditangani</option>
+                                        <option value="selesai" <?= $lp['status']==='selesai'?'selected':'' ?>>Selesai</option>
+                                    </select>
                                     <button type="submit" class="tbl-btn tbl-btn-blue"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 11 16 11"/><path d="M20.49 15a9 9 0 1 1-.18-4.96"/></svg>Update</button>
                                 </form>
                             </td>
@@ -545,23 +650,36 @@ $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
 
     </div>
 
+    <!-- FOOTER -->
     <footer>
         &copy; 2026 SM Irigasi — Panel Administrator · Universitas Sebelas Maret
     </footer>
 </div>
 
+<!-- JAVASCRIPT (Untuk navigasi sidebar dan tab) -->
 <script>
+// Mapping ID section dan judul
 var sections={overview:'sec-overview',users:'sec-users',laporan:'sec-laporan'};
 var titles={overview:'Overview Dashboard',users:'Kelola Pengguna',laporan:'Laporan Kendala'};
 
+// Fungsi untuk berpindah antar tab (Overview / Kelola Pengguna / Laporan)
 function showSection(id){
-    Object.values(sections).forEach(function(s){document.getElementById(s).style.display='none';});
+    // Sembunyikan semua section
+    Object.values(sections).forEach(function(s){
+        document.getElementById(s).style.display='none';
+    });
+    // Tampilkan section yang dipilih
     document.getElementById(sections[id]).style.display='block';
+    // Update judul di topbar
     document.getElementById('topbar-title').textContent=titles[id];
-    document.querySelectorAll('.sb-item').forEach(function(b){b.classList.remove('active');});
+    // Update active state di sidebar
+    document.querySelectorAll('.sb-item').forEach(function(b){
+        b.classList.remove('active');
+    });
     if(event && event.currentTarget) event.currentTarget.classList.add('active');
 }
 
+// Fungsi untuk membuka/tutup sidebar di mobile
 function toggleSidebar(){
     var sidebar=document.getElementById('sidebar');
     var overlay=document.getElementById('sidebar-overlay');
@@ -569,6 +687,7 @@ function toggleSidebar(){
     overlay.classList.toggle('open');
 }
 
+// Fungsi untuk menutup sidebar (dipanggil saat klik overlay)
 function closeSidebar(){
     var sidebar=document.getElementById('sidebar');
     var overlay=document.getElementById('sidebar-overlay');
@@ -576,6 +695,7 @@ function closeSidebar(){
     overlay.classList.remove('open');
 }
 
+// Jika URL memiliki hash (#overview, #users, #laporan), buka section yang sesuai
 var hash=window.location.hash.replace('#','');
 if(hash && sections[hash]) showSection(hash);
 </script>
