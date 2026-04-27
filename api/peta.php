@@ -1,21 +1,6 @@
 <?php
 require_once 'koneksi.php';
-
-// Ambil parameter dari URL path
-$path = $_SERVER['PATH_INFO'] ?? '';
-$segments = explode('/', trim($path, '/'));
-
-if (count($segments) >= 2) {
-    $user_id = $segments[0];
-    $username = urldecode($segments[1]);
-    $nama_depan = urldecode($segments[2] ?? '');
-    $nama_belakang = urldecode($segments[3] ?? '');
-    $role = $segments[4] ?? 'petani';
-    $namaDepan = htmlspecialchars($nama_depan ?: $username);
-} else {
-    header("Location: login.php");
-    exit();
-}
+require_once 'auth_helper.php';
 ?>
 <!DOCTYPE html>
 <html lang="id">
