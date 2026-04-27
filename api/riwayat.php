@@ -1,10 +1,21 @@
 <?php
+require_once 'koneksi.php';
 
-session_start();
-if (!isset($_SESSION['username'])) { header("Location: login.php"); exit(); }
-$namaDepan = htmlspecialchars($_SESSION['nama_depan'] ?? $_SESSION['username'] ?? '');
-$role      = $_SESSION['role'] ?? 'petani';
-?>
+// Ambil parameter dari URL path
+$path = $_SERVER['PATH_INFO'] ?? '';
+$segments = explode('/', trim($path, '/'));
+
+if (count($segments) >= 2) {
+    $user_id = $segments[0];
+    $username = urldecode($segments[1]);
+    $nama_depan = urldecode($segments[2] ?? '');
+    $nama_belakang = urldecode($segments[3] ?? '');
+    $role = $segments[4] ?? 'petani';
+    $namaDepan = htmlspecialchars($nama_depan ?: $username);
+} else {
+    header("Location: login.php");
+    exit();
+}
 <!DOCTYPE html>
 <html lang="id">
 <head>
