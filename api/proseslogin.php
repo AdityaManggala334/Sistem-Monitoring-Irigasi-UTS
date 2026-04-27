@@ -36,11 +36,12 @@ if (!password_verify($password, $user['password'])) {
     die("PASSWORD SALAH!<br>Input: " . htmlspecialchars($password) . "<br>Hash DB: " . $user['password']);
 }
 
-$redirect = "/api/index.php/" . $user['id_users'] . 
-            "/" . urlencode($user['username']) . 
-            "/" . urlencode($user['nama_depan']) . 
-            "/" . urlencode($user['nama_belakang']) . 
-            "/" . $user['role'];
+// Kirim data via GET parameter (lebih sederhana)
+$redirect = "/api/index.php?user_id=" . $user['id_users'] . 
+            "&username=" . urlencode($user['username']) . 
+            "&nama_depan=" . urlencode($user['nama_depan']) . 
+            "&nama_belakang=" . urlencode($user['nama_belakang']) . 
+            "&role=" . $user['role'];
 
 header("Location: " . $redirect);
 exit();
