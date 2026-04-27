@@ -200,31 +200,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_laporan'])) {
 
     <div class="bg-white rounded-2xl p-6 border" style="border-color:rgba(6,78,59,0.08);box-shadow:0 1px 3px rgba(6,78,59,0.05),0 8px 24px rgba(6,78,59,0.06);">
     <h2 class="text-base font-bold text-emerald-900 mb-4 pb-2 inline-block border-b-2 border-emerald-500">Informasi Sistem</h2>
-    <div class="space-y-3">
-        <div class="flex justify-between items-center py-2 border-b border-gray-100">
-            <span class="text-sm text-slate-500 w-24">Nama Sistem</span>
-            <span class="text-sm font-semibold text-slate-700 flex-1">SM Irigasi</span>
-        </div>
-        <div class="flex justify-between items-center py-2 border-b border-gray-100">
-            <span class="text-sm text-slate-500 w-24">Titik Sensor</span>
-            <span class="text-sm font-semibold text-slate-700 flex-1">8 Titik Aktif</span>
-        </div>
-        <div class="flex justify-between items-center py-2 border-b border-gray-100">
-            <span class="text-sm text-slate-500 w-24">Jenis Sensor</span>
-            <span class="text-sm font-semibold text-slate-700 flex-1">Ultrasonik, DHT22, Flow Meter</span>
-        </div>
-        <div class="flex justify-between items-center py-2 border-b border-gray-100">
-            <span class="text-sm text-slate-500 w-24">Komunikasi</span>
-            <span class="text-sm font-semibold text-slate-700 flex-1">LoRa / GSM / WiFi</span>
-        </div>
-        <div class="flex justify-between items-center py-2 border-b border-gray-100">
-            <span class="text-sm text-slate-500 w-24">Update Interval</span>
-            <span class="text-sm font-semibold text-slate-700 flex-1">Setiap 4 detik</span>
-        </div>
-        <div class="flex justify-between items-center py-2">
-            <span class="text-sm text-slate-500 w-24">Area Sawah</span>
-            <span class="text-sm font-semibold text-slate-700 flex-1">±240 Hektar</span>
-        </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+            <thead>
+                <tr class="bg-emerald-800 rounded-lg">
+                    <th class="py-2.5 px-4 text-left text-xs font-bold uppercase tracking-wide text-white rounded-l-lg">#</th>
+                    <th class="py-2.5 px-4 text-left text-xs font-bold uppercase tracking-wide text-white">KETERANGAN</th>
+                    <th class="py-2.5 px-4 text-left text-xs font-bold uppercase tracking-wide text-white rounded-r-lg">DETAIL</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td class="py-3 px-4 text-emerald-600 font-bold border-b border-gray-100">1</td><td class="py-3 px-4 text-slate-600 border-b border-gray-100">Nama Sistem</td><td class="py-3 px-4 text-slate-700 font-medium border-b border-gray-100">SM Irigasi</td></tr>
+                <tr><td class="py-3 px-4 text-emerald-600 font-bold border-b border-gray-100">2</td><td class="py-3 px-4 text-slate-600 border-b border-gray-100">Titik Sensor</td><td class="py-3 px-4 text-slate-700 font-medium border-b border-gray-100">8 Titik Aktif</td></tr>
+                <tr><td class="py-3 px-4 text-emerald-600 font-bold border-b border-gray-100">3</td><td class="py-3 px-4 text-slate-600 border-b border-gray-100">Jenis Sensor</td><td class="py-3 px-4 text-slate-700 font-medium border-b border-gray-100">Ultrasonik, DHT22, Flow Meter</td></tr>
+                <tr><td class="py-3 px-4 text-emerald-600 font-bold border-b border-gray-100">4</td><td class="py-3 px-4 text-slate-600 border-b border-gray-100">Komunikasi</td><td class="py-3 px-4 text-slate-700 font-medium border-b border-gray-100">LoRa / GSM / WiFi</td></tr>
+                <tr><td class="py-3 px-4 text-emerald-600 font-bold border-b border-gray-100">5</td><td class="py-3 px-4 text-slate-600 border-b border-gray-100">Update Interval</td><td class="py-3 px-4 text-slate-700 font-medium border-b border-gray-100">Setiap 4 detik</td></tr>
+                <tr><td class="py-3 px-4 text-emerald-600 font-bold">6</td><td class="py-3 px-4 text-slate-600">Area Sawah</td><td class="py-3 px-4 text-slate-700 font-medium">±240 Hektar</td></tr>
+            </tbody>
+        </table>
     </div>
 </div>
 
