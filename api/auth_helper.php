@@ -2,15 +2,9 @@
 ob_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-/**
- * auth_helper.php
- * Sertakan file ini di setiap halaman yang membutuhkan login.
- * Membaca cookie sm_uid, query database, lalu isi variabel:
- *   $user_id, $username, $nama_depan, $nama_belakang, $role,
- *   $namaDepan, $namaBelakang, $namaLengkap
- */
+require_once 'koneksi.php';      
+require_once 'auth_helper.php';  
 
-// Pastikan koneksi sudah ada (require koneksi.php sebelum file ini)
 if (!isset($conn)) {
     die("Koneksi database belum diinisialisasi.");
 }
