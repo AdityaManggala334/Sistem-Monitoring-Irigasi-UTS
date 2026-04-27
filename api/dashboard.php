@@ -1,32 +1,15 @@
 <?php
 require_once 'koneksi.php';
+require_once 'auth_helper.php';
 
-// Ambil parameter dari URL path
-$path = $_SERVER['PATH_INFO'] ?? '';
-$segments = explode('/', trim($path, '/'));
-
-if (count($segments) >= 2) {
-    $user_id = $segments[0];
-    $username = urldecode($segments[1]);
-    $nama_depan = urldecode($segments[2] ?? '');
-    $nama_belakang = urldecode($segments[3] ?? '');
-    $role = $segments[4] ?? 'petani';
-    $adminNama = htmlspecialchars($nama_depan ?: $username);
-    $adminId = (int)$user_id;
-    
-    // Cek role administrator
-    if ($role !== 'administrator') {
-        header("Location: /api/index.php/" . $user_id . "/" . urlencode($username) . "/" . urlencode($nama_depan) . "/" . urlencode($nama_belakang) . "/" . $role);
-        exit();
-    }
-} else {
-    header("Location: login.php");
+// Cek role administrator
+if ($role !== 'administrator') {
+    header("Location: index.php");
     exit();
 }
 
-$adminNama = $nama_depan . ' ' . $nama_belakang;
-$adminId = (int)$user_id;
-$adminNama = trim($adminNama) ?: $username;
+$adminNama = $namaLengkap;
+$adminId   = (int)$user_id;
 
 /*  POST actions  */
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['aksi'])) {
@@ -83,6 +66,8 @@ $avgDebit=round(array_sum(array_column($sensors,'debit'))/count($sensors),1);
 $avgTMA  =round(array_sum(array_column($sensors,'tma'))/count($sensors));
 $normalCnt=count(array_filter($sensors,fn($s)=>$s['status']==='normal'));
 $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
+?>
+
 ?>
 <!DOCTYPE html>
 <html lang="id">
