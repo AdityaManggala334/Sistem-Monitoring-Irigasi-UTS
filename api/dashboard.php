@@ -68,7 +68,6 @@ $normalCnt=count(array_filter($sensors,fn($s)=>$s['status']==='normal'));
 $kritisCnt=count(array_filter($sensors,fn($s)=>$s['status']==='kritis'));
 ?>
 
-?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
