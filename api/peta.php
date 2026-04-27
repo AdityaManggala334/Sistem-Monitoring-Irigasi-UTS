@@ -293,11 +293,8 @@ require_once 'auth_helper.php';
             Visualisasi posisi 8 sensor aktif · update setiap 4 detik
         </p>
     </div>
-    @media (min-width: 640px) {
-        main h1 { font-size: 1.5rem; }
-        main p { font-size: .82rem; }
-        main > div:first-child { margin-bottom: 1.4rem; }
-    }
+    
+
 
     <!-- KPI Row -->
     <div class="kpi-row">
